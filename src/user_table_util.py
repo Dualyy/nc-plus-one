@@ -17,6 +17,7 @@ def drop_user_table(conn: psycopg.connection):
             conn.commit()
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:
         logging.error(f"Failed with: {e}")
+    logger.info("Users table dropped")
 
 
 def insert_user_data(conn: psycopg.connection, filepath):
@@ -26,6 +27,7 @@ def insert_user_data(conn: psycopg.connection, filepath):
         insert_statement = (
             "INSERT INTO users (email, password, name) VALUES (%s, %s, %s);"
         )
+        logging.info(f"inserting data from '{filepath}' into users")
         with conn.cursor() as curs:
             for row in data:
                 curs.execute(
@@ -34,6 +36,7 @@ def insert_user_data(conn: psycopg.connection, filepath):
         conn.commit()
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:
         logging.error(f"Failed with: {e}")
+    logging.info(f"data inserted into users")
 
 
 def create_user_table(conn: psycopg.connection):
@@ -48,3 +51,4 @@ def create_user_table(conn: psycopg.connection):
                         created_at TIMESTAMPTZ DEFAULT now()
                         );""")
         conn.commit()
+    logger.info("Users table created")
