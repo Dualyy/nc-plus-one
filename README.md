@@ -35,3 +35,7 @@ user = '[USER]'
 password = '[PASSWORD]'
 
 ```
+
+Once this is all setup you simply need to run
+```python main.py```
+from within the project directory and the database will be seeded.
