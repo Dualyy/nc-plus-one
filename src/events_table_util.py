@@ -24,7 +24,7 @@ def create_events_table(conn: psycopg.connection):
 
 
 def drop_events_table(conn: psycopg.connection):
-    """create events table"""
+    """drop events table"""
     logger.info("DROPPING TABLE events")
     with conn.cursor() as curs:
         curs.execute("""DROP TABLE IF EXISTS events""")
@@ -33,7 +33,7 @@ def drop_events_table(conn: psycopg.connection):
 
 
 def insert_events_data(conn: psycopg.connection,filepath):
-    """execute to insert user data from .JSON file"""
+    """execute to insert events data from .JSON file"""
     logging.info(f"inserting data from '{filepath}' into events")
     try:
         data = load_json_file(filepath)
