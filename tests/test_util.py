@@ -1,4 +1,6 @@
 from src.util import *
+from src.user_table_util import *
+from src.venues_table_util import *
 import types
 import pytest
 
@@ -55,3 +57,4 @@ def test_insert_user_data_is_callable():
 
 def test_drop_user_table():
     assert callable(drop_user_table)
+
