@@ -7,21 +7,25 @@ logging.basicConfig(level=logging.INFO)
 
 
 def create_venues_table(conn: psycopg.connection):
-    """create venues table"""
+    """The function takes a psycopg connection and tries to create a venues table"""
     logger.info("CREATE TABLE venues")
     with conn.cursor() as curs:
-        curs.execute("""CREATE TABLE venues(
-                        id SERIAL PRIMARY KEY,
-                        name VARCHAR(255) NOT NULL,
-                        address TEXT,
-                        capacity INT
-                    );""")
-        conn.commit()
-    logger.info("Venues table created")
+        try:
+            curs.execute("""CREATE TABLE venues(
+                            id SERIAL PRIMARY KEY,
+                            name VARCHAR(255) NOT NULL,
+                            address TEXT,
+                            capacity INT
+                        );""")
+            conn.commit()
+            logger.info("Venues table created")
+        except psycopg.errors.DuplicateTable:
+            logging.warning("venues table already exists")
+    
 
 
 def drop_venues_table(conn: psycopg.connection):
-    """create venues table"""
+    """The function takes a psycopg connection and drops the venues table if it exists"""
     logger.info("DROPPING TABLE venues")
     with conn.cursor() as curs:
         curs.execute("""DROP TABLE IF EXISTS venues""")
@@ -30,7 +34,10 @@ def drop_venues_table(conn: psycopg.connection):
 
 
 def insert_venues_data(conn: psycopg.connection, filepath):
-    """execute to insert user data from .JSON file"""
+    """The function takes a psycopg connection and a file path.
+    It insert venue data from .JSON file. File requires each object to have a 'name', 'address', and 'capacity' key.
+    """
+
     logging.info(f"inserting data from '{filepath}' into venues")
     try:
         data = load_json_file(filepath)
