@@ -39,6 +39,7 @@ def insert_rsvp_data(conn: psycopg.connection, filepath):
             for row in data:
                 curs.execute(insert_statement, (row["attendee_id"], row["event_id"]))
         conn.commit()
+        logging.info(f"data inserted into rsvp")
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:
         logging.error(f"Failed with: {e}")
-    logging.info(f"data inserted into rsvp")
+    
