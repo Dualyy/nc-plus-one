@@ -8,8 +8,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 def load_json_file(filepath):
-    logger.info('Reading file...')
+    logger.info("Reading file...")
     with open(filepath) as f:
         for row in json.load(f):
             yield row
-    logger.info('File read!')
+    logger.info("File read!")

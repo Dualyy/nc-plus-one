@@ -5,6 +5,7 @@ from src.util import load_json_file
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
 def create_rsvp_table(conn: psycopg.connection):
     """create rsvp table"""
     logger.info("CREATE TABLE rsvp")
@@ -28,19 +29,15 @@ def drop_rsvp_table(conn: psycopg.connection):
     logger.info("RSVP table dropped")
 
 
-def insert_rsvp_data(conn: psycopg.connection,filepath):
+def insert_rsvp_data(conn: psycopg.connection, filepath):
     """execute to insert rsvp data from .JSON file"""
     logging.info(f"inserting data from '{filepath}' into rsvp")
     try:
         data = load_json_file(filepath)
-        insert_statement = (
-            "INSERT INTO rsvp (attendee_id, event_id) VALUES (%s, %s);"
-        )
+        insert_statement = "INSERT INTO rsvp (attendee_id, event_id) VALUES (%s, %s);"
         with conn.cursor() as curs:
             for row in data:
-                curs.execute(
-                    insert_statement, (row["attendee_id"], row["event_id"])
-                )
+                curs.execute(insert_statement, (row["attendee_id"], row["event_id"]))
         conn.commit()
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:
         logging.error(f"Failed with: {e}")

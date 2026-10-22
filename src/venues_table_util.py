@@ -29,7 +29,7 @@ def drop_venues_table(conn: psycopg.connection):
     logger.info("Venues table dropped")
 
 
-def insert_venues_data(conn: psycopg.connection,filepath):
+def insert_venues_data(conn: psycopg.connection, filepath):
     """execute to insert user data from .JSON file"""
     logging.info(f"inserting data from '{filepath}' into venues")
     try:
