@@ -1,0 +1,22 @@
+[
+  {
+    "name": "[TEST] Venue One",
+    "address": "1 Test Street, Testville, TE1 1ST",
+    "capacity": 10
+  },
+  {
+    "name": "[TEST] Venue Two",
+    "address": "2 Test Street, Testville, TE2 2ND",
+    "capacity": 20
+  },
+  {
+    "name": "[TEST] Venue Three – Online",
+    "address": null,
+    "capacity": 30
+  },
+  {
+    "name": "[TEST] Venue Four",
+    "address": "4 Test Street, Testville, TE4 4TH",
+    "capacity": 40
+  }
+]

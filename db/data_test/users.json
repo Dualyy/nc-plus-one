@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Test Attendee One",
+    "email": "test.one@example.com",
+    "password": "testpassword123"
+  },
+  {
+    "name": "Test Attendee Two",
+    "email": "test.two@example.com",
+    "password": "testpassword123"
+  },
+  {
+    "name": "Test Attendee Three",
+    "email": "test.three@example.com",
+    "password": "testpassword123"
+  }
+]
