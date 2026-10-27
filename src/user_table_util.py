@@ -7,7 +7,7 @@ from src.util import load_json_file
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
+#TODO: fix doc strings
 def drop_user_table(conn: psycopg.connection):
     """execute to drop the user table"""
     logger.info("DROPPING TABLE user")
