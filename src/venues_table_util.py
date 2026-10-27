@@ -5,7 +5,7 @@ from src.util import load_json_file
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
+#TODO: fix doc strings
 def create_venues_table(conn: psycopg.connection):
     """The function takes a psycopg connection and tries to create a venues table"""
     logger.info("CREATE TABLE venues")
@@ -21,7 +21,6 @@ def create_venues_table(conn: psycopg.connection):
             logger.info("Venues table created")
         except psycopg.errors.DuplicateTable:
             logging.warning("venues table already exists")
-    
 
 
 def drop_venues_table(conn: psycopg.connection):
