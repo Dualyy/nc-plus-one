@@ -95,6 +95,6 @@ def get_event_by_id(event_id: int):
                 location=e["venue_name"],
                 address=e["venue_address"],
                 capacity=e["capacity"],
-                created_at=e["created_at"],
+                created_at=e["created_at"]
             )
     }
