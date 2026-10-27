@@ -3,6 +3,8 @@
 Python
 
 PostgreSQL
+
+uvicorn
 ## Installation
 Clone the repository onto your local machine using:
 
@@ -39,3 +41,7 @@ password = '[PASSWORD]'
 Once this is all setup you simply need to run
 ```python main.py```
 from within the project directory and the database will be seeded.
+
+## Running the backend
+
+To run the required backend server please run ```uvicorn main:app --reload```. After running the server, the API documentation can be found at ```http://[HOSTNAME][?Port]/docs#/```
