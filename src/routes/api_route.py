@@ -23,10 +23,8 @@ class CreateLogin(BaseModel):
     password: str
 
 class Token(BaseModel):
-    token_str: str
+    token: str
 
-class TokenDict(BaseModel):
-    token: Token
 
 @api_router.post("/auth/login", status_code= 200)
 def submit_auth(login: Login) -> Token:
@@ -48,7 +46,7 @@ def submit_auth(login: Login) -> Token:
                 raise HTTPException(status_code=401,detail={"status_code": "401 UNAUTHORIZED",
                                                                     "msg": "email or password wrong"})
             token = ""
-        return Token(token_str=token)
+        return Token(token=token)
     elif(login.email and not login.password) or (login.password and not login.email):
         raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
                                                                     "msg": "Missing email or password field"})
@@ -57,7 +55,7 @@ def submit_auth(login: Login) -> Token:
 @api_router.post("/auth/register", status_code=201, response_model=User)
 def register_user(login_info: CreateLogin):
     if not login_info:
-        raise HTTPException(status_code=409,detail={"status_code": "400 BAD REQUEST",
+        raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
                                                                     "msg": f"Field required"})
     pass
     conn = get_connection()
@@ -67,7 +65,7 @@ def register_user(login_info: CreateLogin):
                          """,(login_info.email,))
         login = list(crsr.fetchall())
         if len(login) > 0:
-            raise HTTPException(status_code=409,detail={"status_code": "409 Conflict",
+            raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
                                                         "msg": f"A user with email {login_info.email} already exists"})
 
         crsr.execute("""INSERT INTO users(name,email,password)

@@ -33,7 +33,7 @@ def test_post_api_auth_register_returns_409_when_email_already_exists(client: Te
     "email": "test.one@example.com",
     "password": "testpassword123"
   })
-    assert response.status_code == 409
+    assert response.status_code == 400
     assert response.json()['error']['msg'] == "A user with email test.one@example.com already exists"
 
 def test_post_api_auth_register_returns_201_when_successfull(client: TestClient):
