@@ -1,5 +1,6 @@
 import pytest
 from conftest_routes import *
+from src.routes.event_route import Event
 
 # /events
 def test_get_events_returns_status_200(client):
@@ -30,5 +31,12 @@ def test_get_events_by_id_returns_404_when_given_id_that_doesnt_exist(client):
     invalid_id = 999
     response = client.get(f"/events/{invalid_id}")
     assert response.status_code == 404
-    assert response.json()['error']['error'] == "404 NOT FOUND"
+    assert response.json()['error']['status_code'] == "404 NOT FOUND"
     assert response.json()['error']['msg'] == "event id: 999 does not exist"
+
+def test_get_events_by_id_returns_400_when_given_id_that_is_invalid(client):
+    invalid_id = "abc"
+    response = client.get(f"/events/{invalid_id}")
+    assert response.status_code == 400
+    assert response.json()['error']['status_code'] == "400 BAD REQUEST"
+    assert response.json()['error']['msg'] == "Input should be a valid integer, unable to parse string as an integer"
