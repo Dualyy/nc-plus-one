@@ -22,6 +22,9 @@ async def HTTP_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(RequestValidationError)
 async def HTTP_exception_handler(request: Request, exc: RequestValidationError):
     raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
-                                                         "msg": exc.errors()[0]['msg']})
+                                                         "msg": exc.errors()[0]['msg'],
+                                                         "field": exc.args[0][0]['loc']})
+
+
 
 seed()
