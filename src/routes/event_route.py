@@ -124,7 +124,16 @@ def get_event_by_id(event_id: int):
 
 
 @event_router.post('/{event_id}/rsvp',dependencies=[Depends(get_current_user)], status_code= 201)
-def create_RSVP(event_id: int, user: TokenUser = Depends(get_current_user)):
+def create_RSVP(event_id: int, user: TokenUser = Depends(get_current_user)) -> RSVP:
+    """Create a RSVP for current user's to an event
+    
+            The endpoint creates a RSVP belonging to the current user for the given event.
+    
+            Returns 404 if the event does not exist or the user has no RSVP for it.
+            Returns 409 if an RSVP already exists
+    
+            PERMISSIONS: authenticated user
+        """
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
 
@@ -155,6 +164,15 @@ def create_RSVP(event_id: int, user: TokenUser = Depends(get_current_user)):
 
 @event_router.delete("/{event_id}/rsvp/me", status_code=204)
 def delete_rsvp_for_event(event_id: int, user: TokenUser = Depends(get_current_user)):
+    """Delete the current user's RSVP for an event
+
+        The endpoint removes the RSVP belonging to the current user for the given event.
+
+        Returns 404 if the event does not exist or the user has no RSVP for it.
+
+        PERMISSIONS: authenticated user (can only delete their own RSVP)
+    
+    """
     with get_connection() as conn:
             with conn.cursor(row_factory=dict_row) as crsr:
                 event = find_event_by_id(crsr,event_id)
@@ -177,6 +195,15 @@ def delete_rsvp_for_event(event_id: int, user: TokenUser = Depends(get_current_u
 
 @event_router.post('/',dependencies=[Depends(get_current_user)], status_code= 201)
 def create_event(event: CreateEvent, user: TokenUser = Depends(get_current_user)):
+    """Create a new event
+    
+            The endpoint inserts a new event into the main database and returns the created row.
+            The authenticated user is assigned as organiser.
+    
+    
+            PERMISSIONS: authenticated user
+        
+        """
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
             crsr.execute("""
