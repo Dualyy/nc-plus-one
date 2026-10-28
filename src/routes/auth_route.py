@@ -42,8 +42,7 @@ def submit_auth(login: Login) -> Token:
     conn = get_connection()
     if login.password and login.email:
         user = get_user(conn,login.email)
-
-        if user == None:
+        if user is None:
             raise HTTPException(status_code=401,detail={"status_code": "401 UNAUTHORIZED",
                                                                     "msg": "email or password wrong"})
         if verify_password(user['password_hash'],login.password):

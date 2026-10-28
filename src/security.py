@@ -44,3 +44,4 @@ def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(
             detail="Invalid token"
         )
     return payload
+
