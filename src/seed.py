@@ -1,15 +1,17 @@
 from src.user_table_util import *
 from src.venues_table_util import *
-from src.connection import get_connection
+from src.connection import get_connection, get_environment
 from src.events_table_util import *
 from src.rsvps_table_util import *
 import os
 
 def db_file_path():
-    if os.getenv('ENV') == 'test':
+    env = get_environment()
+    if env == "test":
         return "./db/data_test/"
-    elif os.getenv('ENV') == "development":
+    if env == "development":
         return "./db/data/"
+    raise ValueError(f"No seed data configured for ENV={env!r}")
 
 
 def seed():
