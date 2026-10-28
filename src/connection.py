@@ -5,7 +5,7 @@ import os
 environment="test"
 
 def get_environment() -> str:
-    return os.getenv("ENV", "development")  # one source of truth
+    return os.getenv("ENV", "test")  # one source of truth
 
 config = dotenv_values(f".env.{get_environment()}")
 
