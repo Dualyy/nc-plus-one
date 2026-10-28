@@ -5,6 +5,14 @@ from src.util import load_json_file
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
+def find_rsvp_of_user_for_event(crsr: psycopg.Cursor, event_id: int, user_id: int):
+    crsr.execute("""
+                        SELECT * FROM rsvp r
+                        WHERE event_id = %s AND attendee_id = %s""",(event_id, user_id))
+    return crsr.fetchone()
+    
+
 #TODO: fix doc strings
 def create_rsvp_table(conn: psycopg.Connection):
     """create rsvp table"""

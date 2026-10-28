@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, FastAPI
 from pydantic import BaseModel
 from datetime import datetime
+from src.rsvps_table_util import find_rsvp_of_user_for_event
 from src.connection import get_connection
 from psycopg.rows import dict_row 
 from fastapi import HTTPException
 from src.security import get_current_user
+from src.events_table_util import find_event_by_id
 
 event_router=APIRouter(prefix="/events")
 
@@ -33,6 +35,12 @@ class EventID(BaseModel):
 class CreateRSVP(BaseModel):
     attendee_id: int
     event_id: int
+
+class RSVP(BaseModel):
+    id: int
+    attendee_id: int
+    event_id: int
+    created_at: datetime
 
 
 @event_router.get("/", response_model=EventList)
@@ -108,19 +116,30 @@ def get_event_by_id(event_id: int):
 @event_router.post('/{event_id}/rsvp',dependencies=[Depends(get_current_user)], status_code= 201)
 def create_RSVP(event_id: int, user_id: int = Depends(get_current_user)):
     with get_connection() as conn:
-        with conn.cursor() as crsr:
-            crsr.execute("""
-                        SELECT * FROM events
-                        WHERE id = %s""",(event_id,))
-            event = crsr.fetchone()
+        with conn.cursor(row_factory=dict_row) as crsr:
+
+            #TODO: refactor out => reusable
+            event = find_event_by_id(crsr,event_id)
             if event is None:
                 raise HTTPException(status_code=404,detail={"status_code": "404 NOT FOUND",
                                                      "msg": f"event id: {event_id} does not exist"})
+
             
-            crsr.execute("""
-                        INSERT INTO rsvp(attendee_id,event_id)
-                        VALUES (%s,%s)
-                        RETURNING *""", (user_id['id'],event_id))
-            rsvp_event = crsr.fetchone()
-            conn.commit()
-        return rsvp_event
+
+            rsvp = find_rsvp_of_user_for_event(crsr,event_id ,user_id["id"])
+            if rsvp is None:
+            
+                crsr.execute("""
+                            INSERT INTO rsvp(attendee_id,event_id)
+                            VALUES (%s,%s)
+                            RETURNING *""", (user_id['id'],event_id))
+                rsvp_event = crsr.fetchone()
+                conn.commit()
+                
+                return RSVP(id=rsvp_event['id'],
+                        attendee_id=rsvp_event['attendee_id'],
+                        event_id=rsvp_event['event_id'],
+                        created_at= rsvp_event['created_at'],)
+            else:
+                raise HTTPException(status_code=409,detail={"status_code": "409 CONFLICT",
+                                                                     "msg": f"rsvp already exists for event: {event_id} for user {user_id['id']}"})

@@ -46,9 +46,13 @@ def test_get_events_by_id_returns_400_when_given_id_that_is_invalid(client):
 #/events/:id/rvsp
 
 def test_get_event_RSVP_creation_return_status_201_when_successfull(client,login):
-    response = client.post("/events/1/rsvp",headers=login)
+    response = client.post("/events/4/rsvp",headers=login)
+    expected = {}
     assert response.status_code == 201
-
+    assert response.json()['id'] == 7
+    assert response.json()['attendee_id'] == 1
+    assert response.json()['event_id'] == 4
+    
 def test_get_event_RSVP_creation_return_status_401_when_unauthorized(client):
     response = client.post("/events/1/rsvp")
     assert response.status_code == 401
