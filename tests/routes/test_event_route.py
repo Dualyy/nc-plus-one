@@ -40,3 +40,21 @@ def test_get_events_by_id_returns_400_when_given_id_that_is_invalid(client):
     assert response.status_code == 400
     assert response.json()['error']['status_code'] == "400 BAD REQUEST"
     assert response.json()['error']['msg'] == "Input should be a valid integer, unable to parse string as an integer"
+
+
+#----------------------------------------------------
+#/events/:id/rvsp
+
+def test_get_event_RSVP_creation_return_status_201_when_successfull(client,login):
+    response = client.post("/events/1/rsvp",headers=login)
+    assert response.status_code == 201
+
+def test_get_event_RSVP_creation_return_status_401_when_unauthorized(client):
+    response = client.post("/events/1/rsvp")
+    assert response.status_code == 401
+    assert response.json()['error'] == 'Not authenticated'
+
+def test_get_event_RSVP_creation_return_status_404_when_event_not_found(client,login):
+    response = client.post("/events/99/rsvp",headers=login)
+    assert response.status_code == 404
+    assert response.json()['error']['msg'] == "event id: 99 does not exist"

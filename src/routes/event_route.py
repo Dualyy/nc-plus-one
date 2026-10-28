@@ -30,6 +30,10 @@ class EventDict(BaseModel):
 class EventID(BaseModel):
     id: int
 
+class CreateRSVP(BaseModel):
+    attendee_id: int
+    event_id: int
+
 
 @event_router.get("/", response_model=EventList)
 def get_events():
@@ -101,6 +105,22 @@ def get_event_by_id(event_id: int):
     }
 
 
-@event_router.post('/{event_id}/rsvp',dependencies=[Depends(get_current_user)])
-def create_RSVP():
-    return "Hello"
+@event_router.post('/{event_id}/rsvp',dependencies=[Depends(get_current_user)], status_code= 201)
+def create_RSVP(event_id: int, user_id: int = Depends(get_current_user)):
+    with get_connection() as conn:
+        with conn.cursor() as crsr:
+            crsr.execute("""
+                        SELECT * FROM events
+                        WHERE id = %s""",(event_id,))
+            event = crsr.fetchone()
+            if event is None:
+                raise HTTPException(status_code=404,detail={"status_code": "404 NOT FOUND",
+                                                     "msg": f"event id: {event_id} does not exist"})
+            
+            crsr.execute("""
+                        INSERT INTO rsvp(attendee_id,event_id)
+                        VALUES (%s,%s)
+                        RETURNING *""", (user_id['id'],event_id))
+            rsvp_event = crsr.fetchone()
+            conn.commit()
+        return rsvp_event
