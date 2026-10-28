@@ -47,12 +47,11 @@ def test_get_events_by_id_returns_400_when_given_id_that_is_invalid(client):
 
 def test_get_event_RSVP_creation_return_status_201_when_successfull(client,login):
     response = client.post("/events/4/rsvp",headers=login)
-    expected = {}
     assert response.status_code == 201
     assert response.json()['id'] == 7
     assert response.json()['attendee_id'] == 1
     assert response.json()['event_id'] == 4
-    
+
 def test_get_event_RSVP_creation_return_status_401_when_unauthorized(client):
     response = client.post("/events/1/rsvp")
     assert response.status_code == 401
@@ -62,3 +61,35 @@ def test_get_event_RSVP_creation_return_status_404_when_event_not_found(client,l
     response = client.post("/events/99/rsvp",headers=login)
     assert response.status_code == 404
     assert response.json()['error']['msg'] == "event id: 99 does not exist"
+
+
+#----------------------------------------------------
+#/events/:id/rvsp/me
+
+def test_delete_event_RSVP_return_status_204_when_successfull(client,login):
+    response = client.delete("/events/1/rsvp/me",headers=login)
+    assert response.status_code == 204
+
+def test_delete_event_RSVP_return_status_401_when_unauthorized(client):
+    response = client.delete("/events/1/rsvp/me")
+    assert response.status_code == 401
+    assert response.json()['error'] == 'Not authenticated'
+
+
+#=========================================================
+#POST /events
+
+def test_post_event_creation_return_status_201_when_successfull(client,login):
+    response = client.post("/events",json={
+  "title": "Summer Rooftop Social",
+  "description": "An evening of networking and good vibes.",
+  "starts_at": "2025-08-15T18:00:00Z",
+  "ends_at": "2025-08-15T21:00:00Z",
+  "venue_id": 2
+}, headers=login)
+    assert response.status_code == 201
+
+def test_post_event_creation_return_status_401_when_unauthorized(client):
+    response = client.post("/events")
+    assert response.status_code == 401
+    assert response.json()['error'] == 'Not authenticated'
