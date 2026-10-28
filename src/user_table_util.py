@@ -1,14 +1,44 @@
 import json
+from fastapi import HTTPException
 import psycopg
+from psycopg.rows import dict_row
 from src.connection import get_connection
 import logging
 from src.util import load_json_file
+from src.passwords import hash_password
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+def get_user(conn: psycopg.Connection, email):
+    with conn.cursor(row_factory=dict_row) as curs:
+        curs.execute("""SELECT * FROM users
+                        WHERE email = %s
+                        """,(email,)
+        )
+        user = curs.fetchone()
+    if user == None:
+        raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
+                                                             "msg": f"INVALID REQUEST"})
+    return user
+
+def get_user_by_id(id: int):
+    conn = get_connection()
+    with conn.cursor(row_factory=dict_row) as curs:
+        curs.execute("""SELECT * FROM users
+                        WHERE id = %s
+                        """,(id,)
+        )
+        user = curs.fetchone()
+    if user == None:
+        raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
+                                                             "msg": f"INVALID REQUEST"})
+    return user
+        
+
+
 #TODO: fix doc strings
-def drop_user_table(conn: psycopg.connection):
+def drop_user_table(conn: psycopg.Connection):
     """execute to drop the user table"""
     logger.info("DROPPING TABLE user")
     try:
@@ -20,18 +50,18 @@ def drop_user_table(conn: psycopg.connection):
     logger.info("Users table dropped")
 
 
-def insert_user_data(conn: psycopg.connection, filepath):
+def insert_user_data(conn: psycopg.Connection, filepath):
     """execute to insert user data from .JSON file"""
     try:
         data = load_json_file(filepath)
         insert_statement = (
-            "INSERT INTO users (email, password, name) VALUES (%s, %s, %s);"
+            "INSERT INTO users (email, password_hash, name) VALUES (%s, %s, %s);"
         )
         logging.info(f"inserting data from '{filepath}' into users")
         with conn.cursor() as curs:
             for row in data:
                 curs.execute(
-                    insert_statement, (row["email"], row["password"], row["name"])
+                    insert_statement, (row["email"], hash_password(row["password"]), row["name"])
                 )
         conn.commit()
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:
@@ -39,14 +69,14 @@ def insert_user_data(conn: psycopg.connection, filepath):
     logging.info(f"data inserted into users")
 
 
-def create_user_table(conn: psycopg.connection):
+def create_user_table(conn: psycopg.Connection):
     """create user table"""
     logger.info("CREATE TABLE users")
     with conn.cursor() as curs:
         curs.execute("""CREATE TABLE users(
                         id SERIAL PRIMARY KEY,
                         email VARCHAR(255) UNIQUE NOT NULL,
-                        password VARCHAR(255) NOT NULL,
+                        password_hash VARCHAR(255) NOT NULL,
                         name VARCHAR(255) NOT NULL,
                         created_at TIMESTAMPTZ DEFAULT now()
                         );""")
