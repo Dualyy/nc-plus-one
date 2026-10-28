@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 #TODO: fix doc strings
-def create_rsvp_table(conn: psycopg.connection):
+def create_rsvp_table(conn: psycopg.Connection):
     """create rsvp table"""
     logger.info("CREATE TABLE rsvp")
     with conn.cursor() as curs:
@@ -20,7 +20,7 @@ def create_rsvp_table(conn: psycopg.connection):
     logger.info("RSVP table created")
 
 
-def drop_rsvp_table(conn: psycopg.connection):
+def drop_rsvp_table(conn: psycopg.Connection):
     """drop rsvp table"""
     logger.info("DROPPING TABLE rsvp")
     with conn.cursor() as curs:
@@ -29,7 +29,7 @@ def drop_rsvp_table(conn: psycopg.connection):
     logger.info("RSVP table dropped")
 
 
-def insert_rsvp_data(conn: psycopg.connection, filepath):
+def insert_rsvp_data(conn: psycopg.Connection, filepath):
     """execute to insert rsvp data from .JSON file"""
     logging.info(f"inserting data from '{filepath}' into rsvp")
     try:

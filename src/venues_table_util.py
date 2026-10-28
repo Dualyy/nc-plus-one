@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 #TODO: fix doc strings
-def create_venues_table(conn: psycopg.connection):
+def create_venues_table(conn: psycopg.Connection):
     """The function takes a psycopg connection and tries to create a venues table"""
     logger.info("CREATE TABLE venues")
     with conn.cursor() as curs:
@@ -23,7 +23,7 @@ def create_venues_table(conn: psycopg.connection):
             logging.warning("venues table already exists")
 
 
-def drop_venues_table(conn: psycopg.connection):
+def drop_venues_table(conn: psycopg.Connection):
     """The function takes a psycopg connection and drops the venues table if it exists"""
     logger.info("DROPPING TABLE venues")
     with conn.cursor() as curs:
@@ -32,7 +32,7 @@ def drop_venues_table(conn: psycopg.connection):
     logger.info("Venues table dropped")
 
 
-def insert_venues_data(conn: psycopg.connection, filepath):
+def insert_venues_data(conn: psycopg.Connection, filepath):
     """The function takes a psycopg connection and a file path.
     It insert venue data from .JSON file. File requires each object to have a 'name', 'address', and 'capacity' key.
     """

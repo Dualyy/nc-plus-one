@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 #TODO: fix doc strings
-def create_events_table(conn: psycopg.connection):
+def create_events_table(conn: psycopg.Connection):
     """create events table"""
     logger.info("CREATE TABLE events")
     with conn.cursor() as curs:
@@ -24,7 +24,7 @@ def create_events_table(conn: psycopg.connection):
     logger.info("Events table created")
 
 
-def drop_events_table(conn: psycopg.connection):
+def drop_events_table(conn: psycopg.Connection):
     """drop events table"""
     logger.info("DROPPING TABLE events")
     with conn.cursor() as curs:
@@ -33,7 +33,7 @@ def drop_events_table(conn: psycopg.connection):
     logger.info("Events table dropped")
 
 
-def insert_events_data(conn: psycopg.connection, filepath):
+def insert_events_data(conn: psycopg.Connection, filepath):
     """execute to insert events data from .JSON file"""
     logging.info(f"inserting data from '{filepath}' into events")
     try:
