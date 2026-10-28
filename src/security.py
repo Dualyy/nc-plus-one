@@ -5,6 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from src.connection import config
 from src.user_table_util import get_user_by_id
+from src.models.user import TokenUser
 
 
 
@@ -43,5 +44,5 @@ def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(
             status_code=401,
             detail="Invalid token"
         )
-    return payload
+    return TokenUser(**payload)
 
