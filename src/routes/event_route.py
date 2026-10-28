@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, FastAPI
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timezone
 from src.rsvps_table_util import find_rsvp_of_user_for_event
 from src.connection import get_connection
 from psycopg.rows import dict_row 
 from fastapi import HTTPException
 from src.security import get_current_user
 from src.events_table_util import find_event_by_id
+from src.models.user import TokenUser
+
 
 event_router=APIRouter(prefix="/events")
 
@@ -41,6 +43,14 @@ class RSVP(BaseModel):
     attendee_id: int
     event_id: int
     created_at: datetime
+
+class CreateEvent(BaseModel):
+    title: str
+    description: str
+    starts_at: datetime
+    ends_at: datetime
+    venue_id: int
+
 
 
 @event_router.get("/", response_model=EventList)
@@ -114,7 +124,7 @@ def get_event_by_id(event_id: int):
 
 
 @event_router.post('/{event_id}/rsvp',dependencies=[Depends(get_current_user)], status_code= 201)
-def create_RSVP(event_id: int, user_id: int = Depends(get_current_user)):
+def create_RSVP(event_id: int, user: TokenUser = Depends(get_current_user)):
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
 
@@ -124,22 +134,55 @@ def create_RSVP(event_id: int, user_id: int = Depends(get_current_user)):
                 raise HTTPException(status_code=404,detail={"status_code": "404 NOT FOUND",
                                                      "msg": f"event id: {event_id} does not exist"})
 
-            
-
-            rsvp = find_rsvp_of_user_for_event(crsr,event_id ,user_id["id"])
+            rsvp = find_rsvp_of_user_for_event(crsr,event_id ,user.id)
             if rsvp is None:
             
                 crsr.execute("""
                             INSERT INTO rsvp(attendee_id,event_id)
                             VALUES (%s,%s)
-                            RETURNING *""", (user_id['id'],event_id))
+                            RETURNING *""", (user.id,event_id))
                 rsvp_event = crsr.fetchone()
                 conn.commit()
-                
+
                 return RSVP(id=rsvp_event['id'],
                         attendee_id=rsvp_event['attendee_id'],
                         event_id=rsvp_event['event_id'],
                         created_at= rsvp_event['created_at'],)
             else:
                 raise HTTPException(status_code=409,detail={"status_code": "409 CONFLICT",
-                                                                     "msg": f"rsvp already exists for event: {event_id} for user {user_id['id']}"})
+                                                                     "msg": f"rsvp already exists for event: {event_id} for user {user.id}"})
+
+
+@event_router.delete("/{event_id}/rsvp/me", status_code=204)
+def delete_rsvp_for_event(event_id: int, user: TokenUser = Depends(get_current_user)):
+    with get_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as crsr:
+                event = find_event_by_id(crsr,event_id)
+                if event is not None:
+                    rsvp = find_rsvp_of_user_for_event(crsr,event_id ,user.id)
+                    if rsvp is not None:
+                        print(rsvp)
+                        crsr.execute("""
+                                    DELETE FROM rsvp
+                                    WHERE event_id = %s AND attendee_id = %s;"""
+                                    ,(event_id, user.id))
+                        conn.commit()
+                    else:
+                        raise HTTPException(status_code=404,detail={"status_code": "404 NOTFOUND",
+                                                                                                                 "msg": f"No rsvp exists for for user {user.id} at event {event_id} "})
+                else: 
+                    raise HTTPException(status_code=404,detail={"status_code": "404 NOTFOUND",
+                                                                                         "msg": f"event {event_id} does not exist"
+                    })
+
+@event_router.post('/',dependencies=[Depends(get_current_user)], status_code= 201)
+def create_event(event: CreateEvent, user: TokenUser = Depends(get_current_user)):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as crsr:
+            crsr.execute("""
+                        INSERT INTO events (title,description,starts_at, ends_at, venue_id, organiser_id)
+                        VALUES (%s,%s,%s,%s,%s,%s)
+                        RETURNING *""",(event.title, event.description, event.starts_at, event.ends_at, event.venue_id, user.id))
+            conn.commit()
+            created_event = crsr.fetchone()
+    return created_event
