@@ -1,9 +1,10 @@
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 from pydantic import BaseModel
 from datetime import datetime
 from src.connection import get_connection
 from psycopg.rows import dict_row 
 from fastapi import HTTPException
+from src.security import get_current_user
 
 event_router=APIRouter(prefix="/events")
 
@@ -98,3 +99,8 @@ def get_event_by_id(event_id: int):
                 created_at=e["created_at"]
             )
     }
+
+
+@event_router.post('/{event_id}/rsvp',dependencies=[Depends(get_current_user)])
+def create_RSVP():
+    return "Hello"
