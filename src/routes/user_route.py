@@ -27,7 +27,7 @@ def get_event_attendees(user: TokenUser = Depends(get_current_user)):
             rank = 0
 
 
-
+            #TODO: ask NC help of this is acceptable
             return {"events" : [{"id": rsvp['id'],
                                   "title":rsvp['title'],
                                     "starts_at": rsvp['starts_at'],

@@ -1,7 +1,5 @@
 import pytest
 from conftest_routes import *
-from src.routes.event_route import Event
-
 # /events
 def test_get_events_returns_status_200(client):
     response = client.get("/events")
