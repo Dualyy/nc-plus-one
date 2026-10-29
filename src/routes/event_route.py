@@ -68,6 +68,16 @@ class PatchEvent(BaseModel):
     venue_id: Optional[int] = None
 
 
+class Attendee(BaseModel):
+    id: int
+    name: str
+    email: str
+    rsvped_at: datetime
+
+class ListAttendees(BaseModel):
+    attendees: list[Attendee]
+
+
 @event_router.get("/", response_model=EventList)
 def get_events():
     """Retrieve a list of all events
@@ -347,7 +357,7 @@ def patch_event(
 
 
 @event_router.get("/{event_id}/attendees", status_code=200)
-def get_event_attendees(event_id: int, user: TokenUser = Depends(get_current_user)):
+def get_event_attendees(event_id: int, user: TokenUser = Depends(get_current_user)) -> ListAttendees:
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
             event = find_event_by_id(crsr, event_id)
@@ -367,12 +377,15 @@ def get_event_attendees(event_id: int, user: TokenUser = Depends(get_current_use
                         "msg": f"user: {user.id} is not event organiser",
                     },
                 )
-            crsr.execute("""SELECT u.id, u.name, u.email, r.created_at AS rsvped_at
+            crsr.execute(
+                """SELECT u.id, u.name, u.email, r.created_at AS rsvped_at
                             FROM rsvp r
                             INNER JOIN users u ON r.attendee_id = u.id
                             WHERE r.event_id = %s
                             ORDER BY r.created_at;
-                            """,(event_id,))
-            attendees = crsr.fetchall()
+                            """,
+                (event_id,),
+            )
+            list_attendees = crsr.fetchall()
 
-    return {"attendees": [attendee for attendee in attendees]}
+    return ListAttendees(attendees=[attendee for attendee in list_attendees])
