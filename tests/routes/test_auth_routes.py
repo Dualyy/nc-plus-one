@@ -3,7 +3,7 @@ from conftest_routes import *
 
 
 
-#test /api/auth/login
+#test /auth/login
 def test_post_api_auth_login_returns_status_200_when_successfull(client: TestClient):
     response = client.post("/auth/login", json={'email': 'test.one@example.com', 'password': 'testpassword123'})
     assert response.status_code == 200
@@ -20,7 +20,7 @@ def test_post_api_auth_login_returns_status_400_when_only_given_one_login_field(
 
 #--------------------------------------------------------------------
 
-#test /api/auth/register
+#test /auth/register
 
 def test_post_api_auth_register_returns_400_when_missing_fields(client: TestClient):
     response = client.post("/auth/register")
