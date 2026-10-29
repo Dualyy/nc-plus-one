@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import psycopg
 import logging
 from src.util import load_json_file
@@ -12,7 +13,6 @@ def find_event_by_id(crsr: psycopg.Cursor, event_id: int):
                     SELECT * FROM events e
                     WHERE id = %s""",(event_id,))
     event = crsr.fetchone()
-
     return event
 
 #TODO: fix doc strings
