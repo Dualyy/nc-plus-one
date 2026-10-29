@@ -52,7 +52,7 @@ def test_get_event_RSVP_creation_return_status_201_when_successfull(client,login
     assert response.json()['attendee_id'] == 1
     assert response.json()['event_id'] == 4
 
-def test_get_event_RSVP_creation_return_status_401_when_unauthorized(client):
+def test_get_event_RSVP_creation_return_status_401_when_unauthenticated(client):
     response = client.post("/events/1/rsvp")
     assert response.status_code == 401
     assert response.json()['error'] == 'Not authenticated'
@@ -70,7 +70,7 @@ def test_delete_event_RSVP_return_status_204_when_successfull(client,login):
     response = client.delete("/events/1/rsvp/me",headers=login)
     assert response.status_code == 204
 
-def test_delete_event_RSVP_return_status_401_when_unauthorized(client):
+def test_delete_event_RSVP_return_status_401_when_unauthenticated(client):
     response = client.delete("/events/1/rsvp/me")
     assert response.status_code == 401
     assert response.json()['error'] == 'Not authenticated'
@@ -89,7 +89,34 @@ def test_post_event_creation_return_status_201_when_successfull(client,login):
 }, headers=login)
     assert response.status_code == 201
 
-def test_post_event_creation_return_status_401_when_unauthorized(client):
+def test_post_event_creation_return_status_401_when_unauthenticated(client):
     response = client.post("/events")
     assert response.status_code == 401
     assert response.json()['error'] == 'Not authenticated'
+
+
+#=========================================================
+#PATCH /events
+def test_patch_event_return_status_400_when_authorized_but_no_body(client,login):
+    response = client.patch("/events/1",headers=login)
+    assert response.status_code == 400
+
+def test_patch_event_return_status_200_when_authorized_and_valid_body(client,login):
+    input ={"title": "TestChange", "description": "A testing success"}
+    response = client.patch("/events/1",json=input,headers=login)
+    result = client.get("/events/1")
+    
+    assert response.status_code == 200
+    assert result.json()['event']['title'] == input['title']
+    assert result.json()['event']['description'] == input['description']
+
+def test_patch_event_return_status_401_when_unauthenticated(client,login):
+    response = client.patch("/events/1")
+    assert response.status_code == 401
+
+def test_patch_event_return_status_403_when_authenticated_and_valid_body_but_not_authorized(client,login):
+    input ={"title": "TestChange", "description": "A testing success"}
+    response = client.patch("/events/3",json=input,headers=login)
+    
+    assert response.status_code == 403
+  
