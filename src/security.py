@@ -22,10 +22,6 @@ def create_JWT_token(id: int, name: str, admin: bool | None = False):
 
 bearer_scheme = HTTPBearer()
 
-def validate_token_expiration(timestamp: datetime):
-    if timestamp > datetime.now():
-        raise HTTPException(status_code=401,detail={"status_code": "401 UNAUTHORIZED",
-                                                     "msg": f"Invalid Token"})
 
 def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme)):
     if credentials is None:
