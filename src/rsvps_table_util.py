@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import psycopg
 import logging
 from src.util import load_json_file
@@ -7,13 +8,17 @@ logging.basicConfig(level=logging.INFO)
 
 
 def find_rsvp_of_user_for_event(crsr: psycopg.Cursor, event_id: int, user_id: int):
-    crsr.execute("""
+    crsr.execute(
+        """
                         SELECT * FROM rsvp r
-                        WHERE event_id = %s AND attendee_id = %s""",(event_id, user_id))
-    return crsr.fetchone()
-    
+                        WHERE event_id = %s AND attendee_id = %s""",
+        (event_id, user_id),
+    )
+    rsvp_event = crsr.fetchone()
+    return rsvp_event
 
-#TODO: fix doc strings
+
+# TODO: fix doc strings
 def create_rsvp_table(conn: psycopg.Connection):
     """create rsvp table"""
     logger.info("CREATE TABLE rsvp")
@@ -50,4 +55,3 @@ def insert_rsvp_data(conn: psycopg.Connection, filepath):
         logging.info(f"data inserted into rsvp")
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:
         logging.error(f"Failed with: {e}")
-    
