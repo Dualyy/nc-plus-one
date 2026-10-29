@@ -1,0 +1,36 @@
+from fastapi import APIRouter, Depends, FastAPI
+
+from src.connection import get_connection
+from psycopg.rows import dict_row
+from fastapi import HTTPException
+from src.security import get_current_user
+
+from src.models.user import TokenUser
+
+user_router = APIRouter(prefix="/user")
+
+@user_router.get("/me/events", status_code=200)
+def get_event_attendees(user: TokenUser = Depends(get_current_user)):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as crsr:
+            crsr.execute("""
+                            SELECT e.id, e.title, e.starts_at, r.created_at as rsvp_date
+                            FROM events e
+                            INNER JOIN rsvp r
+                            ON e.id = r.id
+                            WHERE r.attendee_id = %s
+                            GROUP BY e.id, e.title, e.starts_at, r.created_at
+                            HAVING r.created_at IS NOT NULL
+                            ORDER BY e.starts_at
+                            """,(user.id,))
+            rsvps = crsr.fetchall()
+            rank = 0
+
+
+
+            return {"events" : [{"id": rsvp['id'],
+                                  "title":rsvp['title'],
+                                    "starts_at": rsvp['starts_at'],
+                                    "rsvp_date" : rsvp['rsvp_date'],
+                                    "event_rank": rank,
+                                    "total_rsvps": len(rsvps)} for rank, rsvp in enumerate(rsvps, start=1)]}

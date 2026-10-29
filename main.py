@@ -3,6 +3,7 @@ from fastapi import FastAPI
 
 from src.routes.event_route import event_router
 from src.routes.auth_route import auth_router
+from src.routes.user_route import user_router
 
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi import FastAPI, Request, status
@@ -13,6 +14,7 @@ from src.security import *
 app = FastAPI(title="nc_plus_one")
 app.include_router(event_router)
 app.include_router(auth_router)
+app.include_router(user_router)
 
 
 @app.exception_handler(HTTPException)

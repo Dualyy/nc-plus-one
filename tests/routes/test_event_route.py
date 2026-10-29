@@ -136,3 +136,15 @@ def test_get_attendees_for_given_event_returns_403_when_authenticated_but_unauth
 def test_get_attendees_for_given_event_returns_200_when_authenticated_and_authorised(client,login):
     response = client.get("/events/99/attendees", headers=login)
     assert response.status_code == 404
+
+#=========================================================
+#GET user/me/events
+
+def test_get_event_user_is_attending_when_authenticated(client,login):
+    response = client.get("user/me/events", headers=login)
+    assert response.status_code == 200
+    assert len(response.json()['events']) == 2
+
+def test_get_event_user_is_attending_returns_401_when_unauthorized(client):
+    response = client.get("user/me/events")
+    assert response.status_code == 401
