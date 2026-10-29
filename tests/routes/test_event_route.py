@@ -120,3 +120,19 @@ def test_patch_event_return_status_403_when_authenticated_and_valid_body_but_not
     
     assert response.status_code == 403
   
+
+#=========================================================
+#GET /events/:id/attendees
+
+def test_get_attendees_for_given_event_returns_200_when_authenticated_and_authorised(client,login):
+    response = client.get("/events/1/attendees", headers=login)
+    assert response.status_code == 200
+
+def test_get_attendees_for_given_event_returns_403_when_authenticated_but_unauthorised(client,login):
+    response = client.get("/events/3/attendees", headers=login)
+    assert response.status_code == 403
+    assert "is not event organiser" in response.json()['error']['msg']
+
+def test_get_attendees_for_given_event_returns_200_when_authenticated_and_authorised(client,login):
+    response = client.get("/events/99/attendees", headers=login)
+    assert response.status_code == 404

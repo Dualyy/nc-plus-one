@@ -319,7 +319,9 @@ def patch_event(
                     },
                 )
             else:
-                if updates.get("starts_at", event["starts_at"]) >= updates.get("ends_at", event["ends_at"]):
+                if updates.get("starts_at", event["starts_at"]) >= updates.get(
+                    "ends_at", event["ends_at"]
+                ):
                     raise HTTPException(
                         status_code=400,
                         detail={
@@ -334,12 +336,43 @@ def patch_event(
                 )
                 crsr.execute(
                     f"""UPDATE events
-                            SET {set_string}
-                            WHERE id = %s
-                            RETURNING *""",
+                        SET {set_string}
+                        WHERE id = %s
+                        RETURNING *""",
                     (*updates.values(), event_id),
                 )
                 updated_event = crsr.fetchone()
                 conn.commit()
                 return updated_event
-            
+
+
+@event_router.get("/{event_id}/attendees", status_code=200)
+def get_event_attendees(event_id: int, user: TokenUser = Depends(get_current_user)):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as crsr:
+            event = find_event_by_id(crsr, event_id)
+            if event is None:
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "status_code": "404 NOT FOUND",
+                        "msg": f"event id: {event_id} does not exist",
+                    },
+                )
+            if event["organiser_id"] != user.id:
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "status_code": "403 FORBIDDEN",
+                        "msg": f"user: {user.id} is not event organiser",
+                    },
+                )
+            crsr.execute("""SELECT u.id, u.name, u.email, r.created_at AS rsvped_at
+                            FROM rsvp r
+                            INNER JOIN users u ON r.attendee_id = u.id
+                            WHERE r.event_id = %s
+                            ORDER BY r.created_at;
+                            """,(event_id,))
+            attendees = crsr.fetchall()
+
+    return {"attendees": [attendee for attendee in attendees]}
