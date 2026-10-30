@@ -35,3 +35,7 @@ def seed():
     print("-------------------------")
     create_rsvp_table(conn)
     insert_rsvp_data(conn, f"{db_file_path()}rsvps.json")
+
+
+if __name__ == "__main__":
+    seed()

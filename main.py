@@ -1,4 +1,3 @@
-from src.seed import seed
 from fastapi import FastAPI
 
 from src.routes.event_route import event_router
@@ -36,6 +35,3 @@ async def HTTP_exception_handler_requests_validation(
             "field": exc.args[0][0]["loc"],
         },
     )
-
-
-seed()
