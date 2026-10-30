@@ -23,12 +23,19 @@ app.include_router(organisers_router)
 async def HTTP_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
 
-@app.exception_handler(RequestValidationError)
-async def HTTP_exception_handler_requests_validation(request: Request, exc: RequestValidationError):
-    raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
-                                                         "msg": exc.errors()[0]['msg'],
-                                                         "field": exc.args[0][0]['loc']})
 
+@app.exception_handler(RequestValidationError)
+async def HTTP_exception_handler_requests_validation(
+    request: Request, exc: RequestValidationError
+):
+    raise HTTPException(
+        status_code=400,
+        detail={
+            "status_code": "400 BAD REQUEST",
+            "msg": exc.errors()[0]["msg"],
+            "field": exc.args[0][0]["loc"],
+        },
+    )
 
 
 seed()

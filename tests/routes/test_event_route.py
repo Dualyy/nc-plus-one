@@ -1,148 +1,203 @@
 import pytest
 from conftest_routes import *
+
+
 # /events
 def test_get_events_returns_status_200(client):
     response = client.get("/events")
     assert response.status_code == 200
 
+
 def test_get_events_returns_list_of_events(client):
     response = client.get("/events")
-    assert isinstance(response.json()['events'],list)
-    assert len(response.json()['events']) == 4
+    assert isinstance(response.json()["events"], list)
+    assert len(response.json()["events"]) == 4
 
-def test_get_events_returns_empty_list_when_no_events(client,delete_events):
+
+def test_get_events_returns_empty_list_when_no_events(client, delete_events):
     delete_events
     response = client.get("/events")
-    assert len(response.json()['events']) == 0
+    assert len(response.json()["events"]) == 0
 
-#----------------------------------------------------
-#/events/:id
-def test_get_events_by_id_returns_status_200(client):
+
+# ----------------------------------------------------
+# GET /events/:id
+def test_get_events_by_id_returns_status_200(client, test_event):
     response = client.get("/events/1")
     assert response.status_code == 200
 
-def test_get_events_returns_event_with_given_id(client):
+
+def test_get_events_returns_event_with_given_id(client, test_event):
     response = client.get("/events/1")
-    assert isinstance(response.json()['event'],dict)
+    assert isinstance(response.json()["event"], dict)
+    assert response.json()["event"]["id"] == test_event["event"]["id"]
+    assert response.json()["event"]["title"] == test_event["event"]["title"]
+
 
 def test_get_events_by_id_returns_404_when_given_id_that_doesnt_exist(client):
     invalid_id = 999
     response = client.get(f"/events/{invalid_id}")
     assert response.status_code == 404
-    assert response.json()['error']['status_code'] == "404 NOT FOUND"
-    assert response.json()['error']['msg'] == "event id: 999 does not exist"
+    assert response.json()["error"]["status_code"] == "404 NOT FOUND"
+    assert response.json()["error"]["msg"] == "event id: 999 does not exist"
+
 
 def test_get_events_by_id_returns_400_when_given_id_that_is_invalid(client):
     invalid_id = "abc"
     response = client.get(f"/events/{invalid_id}")
     assert response.status_code == 400
-    assert response.json()['error']['status_code'] == "400 BAD REQUEST"
-    assert response.json()['error']['msg'] == "Input should be a valid integer, unable to parse string as an integer"
+    assert response.json()["error"]["status_code"] == "400 BAD REQUEST"
+    assert (
+        response.json()["error"]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
-#----------------------------------------------------
-#/events/:id/rvsp
+# ----------------------------------------------------
+# /events/:id/rvsp
 
-def test_get_event_RSVP_creation_return_status_201_when_successfull(client,login):
-    response = client.post("/events/4/rsvp",headers=login)
+
+def test_get_event_RSVP_creation_return_status_201_when_successfull(client, login):
+    response = client.post("/events/4/rsvp", headers=login)
     assert response.status_code == 201
-    assert response.json()['id'] == 7
-    assert response.json()['attendee_id'] == 1
-    assert response.json()['event_id'] == 4
+    assert response.json()["id"] == 7
+    assert response.json()["attendee_id"] == 1
+    assert response.json()["event_id"] == 4
+
 
 def test_get_event_RSVP_creation_return_status_401_when_unauthenticated(client):
     response = client.post("/events/1/rsvp")
     assert response.status_code == 401
-    assert response.json()['error'] == 'Not authenticated'
+    assert response.json()["error"] == "Not authenticated"
 
-def test_get_event_RSVP_creation_return_status_404_when_event_not_found(client,login):
-    response = client.post("/events/99/rsvp",headers=login)
+
+def test_get_event_RSVP_creation_return_status_404_when_event_not_found(client, login):
+    response = client.post("/events/99/rsvp", headers=login)
     assert response.status_code == 404
-    assert response.json()['error']['msg'] == "event id: 99 does not exist"
+    assert response.json()["error"]["msg"] == "event id: 99 does not exist"
 
 
-#----------------------------------------------------
-#/events/:id/rvsp/me
+# ----------------------------------------------------
+# DELETE /events/:id/rvsp/me
 
-def test_delete_event_RSVP_return_status_204_when_successfull(client,login):
-    response = client.delete("/events/1/rsvp/me",headers=login)
+
+def test_delete_event_RSVP_return_status_204_when_successfull(client, login):
+    response = client.delete("/events/1/rsvp/me", headers=login)
     assert response.status_code == 204
+
 
 def test_delete_event_RSVP_return_status_401_when_unauthenticated(client):
     response = client.delete("/events/1/rsvp/me")
     assert response.status_code == 401
-    assert response.json()['error'] == 'Not authenticated'
+    assert response.json()["error"] == "Not authenticated"
 
 
-#=========================================================
-#POST /events
+def test_delete_event_RSVP_return_status_404_when_deletion_successfull_and_RSVP_deletion_request_is_send_again(
+    client, login
+):
+    delete = client.delete("/events/1/rsvp/me", headers=login)
+    response = client.delete("/events/1/rsvp/me", headers=login)
+    assert response.status_code == 404
 
-def test_post_event_creation_return_status_201_when_successfull(client,login):
-    response = client.post("/events",json={
-  "title": "Summer Rooftop Social",
-  "description": "An evening of networking and good vibes.",
-  "starts_at": "2025-08-15T18:00:00Z",
-  "ends_at": "2025-08-15T21:00:00Z",
-  "venue_id": 2
-}, headers=login)
+
+# =========================================================
+# POST /events
+
+
+def test_post_event_creation_return_status_201_when_successfull(client, login):
+    response = client.post(
+        "/events",
+        json={
+            "title": "Summer Rooftop Social",
+            "description": "An evening of networking and good vibes.",
+            "starts_at": "2025-08-15T18:00:00Z",
+            "ends_at": "2025-08-15T21:00:00Z",
+            "venue_id": 2,
+        },
+        headers=login,
+    )
     assert response.status_code == 201
+
 
 def test_post_event_creation_return_status_401_when_unauthenticated(client):
     response = client.post("/events")
     assert response.status_code == 401
-    assert response.json()['error'] == 'Not authenticated'
+    assert response.json()["error"] == "Not authenticated"
 
 
-#=========================================================
-#PATCH /events
-def test_patch_event_return_status_400_when_authorized_but_no_body(client,login):
-    response = client.patch("/events/1",headers=login)
+# =========================================================
+# PATCH /events
+
+
+def test_patch_event_return_status_400_when_authorized_but_no_body(client, login):
+    response = client.patch("/events/1", headers=login)
     assert response.status_code == 400
 
-def test_patch_event_return_status_200_when_authorized_and_valid_body(client,login):
-    input ={"title": "TestChange", "description": "A testing success"}
-    response = client.patch("/events/1",json=input,headers=login)
-    result = client.get("/events/1")
-    
-    assert response.status_code == 200
-    assert result.json()['event']['title'] == input['title']
-    assert result.json()['event']['description'] == input['description']
 
-def test_patch_event_return_status_401_when_unauthenticated(client,login):
+def test_patch_event_return_status_200_when_authorized_and_valid_body(client, login):
+    input = {"title": "TestChange", "description": "A testing success"}
+    response = client.patch("/events/1", json=input, headers=login)
+    result = client.get("/events/1")
+
+    assert response.status_code == 200
+    assert result.json()["event"]["title"] == input["title"]
+    assert result.json()["event"]["description"] == input["description"]
+
+
+def test_patch_event_return_status_401_when_unauthenticated(client, login):
     response = client.patch("/events/1")
     assert response.status_code == 401
 
-def test_patch_event_return_status_403_when_authenticated_and_valid_body_but_not_authorized(client,login):
-    input ={"title": "TestChange", "description": "A testing success"}
-    response = client.patch("/events/3",json=input,headers=login)
-    
+
+def test_patch_event_return_status_403_when_authenticated_and_valid_body_but_not_authorized(
+    client, login
+):
+    input = {"title": "TestChange", "description": "A testing success"}
+    response = client.patch("/events/3", json=input, headers=login)
+
     assert response.status_code == 403
-  
 
-#=========================================================
-#GET /events/:id/attendees
 
-def test_get_attendees_for_given_event_returns_200_when_authenticated_and_authorised(client,login):
+# =========================================================
+# GET /events/:id/attendees
+
+
+def test_get_attendees_for_given_event_returns_200_when_authenticated_and_authorised(
+    client, login
+):
     response = client.get("/events/1/attendees", headers=login)
     assert response.status_code == 200
 
-def test_get_attendees_for_given_event_returns_403_when_authenticated_but_unauthorised(client,login):
+
+def test_get_attendees_for_given_event_returns_atendees_when_authenticated_and_authorised(
+    client, login, test_list_of_attendees
+):
+    response = client.get("/events/1/attendees", headers=login)
+    assert response.status_code == 200
+    assert (
+        response.json()["attendees"][0]["id"]
+        == test_list_of_attendees["attendees"][0]["id"]
+    )
+    assert (
+        response.json()["attendees"][0]["name"]
+        == test_list_of_attendees["attendees"][0]["name"]
+    )
+    assert (
+        response.json()["attendees"][0]["email"]
+        == test_list_of_attendees["attendees"][0]["email"]
+    )
+
+    assert len(response.json()["attendees"]) == len(test_list_of_attendees["attendees"])
+
+
+def test_get_attendees_for_given_event_returns_403_when_authenticated_but_unauthorised(
+    client, login
+):
     response = client.get("/events/3/attendees", headers=login)
     assert response.status_code == 403
-    assert "is not event organiser" in response.json()['error']['msg']
+    assert "is not event organiser" in response.json()["error"]["msg"]
 
-def test_get_attendees_for_given_event_returns_200_when_authenticated_and_authorised(client,login):
+
+def test_get_attendees_for_given_event_returns_404_when_event_not_found(client, login):
     response = client.get("/events/99/attendees", headers=login)
     assert response.status_code == 404
-
-#=========================================================
-#GET user/me/events
-
-def test_get_event_user_is_attending_when_authenticated(client,login):
-    response = client.get("user/me/events", headers=login)
-    assert response.status_code == 200
-    assert len(response.json()['events']) == 2
-
-def test_get_event_user_is_attending_returns_401_when_unauthorized(client):
-    response = client.get("user/me/events")
-    assert response.status_code == 401

@@ -9,13 +9,17 @@ logging.basicConfig(level=logging.INFO)
 
 def find_event_by_id(crsr: psycopg.Cursor, event_id: int):
 
-    crsr.execute("""
+    crsr.execute(
+        """
                     SELECT * FROM events e
-                    WHERE id = %s""",(event_id,))
+                    WHERE id = %s""",
+        (event_id,),
+    )
     event = crsr.fetchone()
     return event
 
-#TODO: fix doc strings
+
+# TODO: fix doc strings
 def create_events_table(conn: psycopg.Connection):
     """create events table"""
     logger.info("CREATE TABLE events")

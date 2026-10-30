@@ -32,15 +32,14 @@ This project requires you to setup different credentials for different environme
 An example file is provided within the repo but generally it should look something like this:
 
 ```python
-HOST = '[YOUR HOST ADDRESS]'
-PORT = '[PORT]'
-DBNAME = '[DBNAME]'
-USER = '[USER]'
-PASSWORD = '[PASSWORD]'
+HOST = "[YOUR HOST ADDRESS]"
+PORT = "[PORT]"
+DBNAME = "[DBNAME]"
+USER = "[USER]"
+PASSWORD = "[PASSWORD]"
 
 
-JWT_SECRET = '[YOUR SECRET]'
-
+JWT_SECRET = "[YOUR SECRET]"
 ```
 
 Once this is all setup you simply need to run

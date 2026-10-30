@@ -5,7 +5,8 @@ from src.util import load_json_file
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-#TODO: fix doc strings
+
+# TODO: fix doc strings
 def create_venues_table(conn: psycopg.Connection):
     """The function takes a psycopg connection and tries to create a venues table"""
     logger.info("CREATE TABLE venues")

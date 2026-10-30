@@ -5,6 +5,7 @@ from src.table_utils.events_table_util import *
 from src.table_utils.rsvps_table_util import *
 import os
 
+
 def db_file_path():
     env = get_environment()
     if env == "test":
@@ -17,21 +18,20 @@ def db_file_path():
 def seed():
 
     conn = get_connection()
-    print('-------------------------')
+    print("-------------------------")
     drop_rsvp_table(conn)
     drop_events_table(conn)
     drop_venues_table(conn)
     drop_user_table(conn)
-    print('-------------------------')
+    print("-------------------------")
     create_user_table(conn)
     insert_user_data(conn, f"{db_file_path()}users.json")
-    print('-------------------------')
+    print("-------------------------")
     create_venues_table(conn)
     insert_venues_data(conn, f"{db_file_path()}venues.json")
-    print('-------------------------')
+    print("-------------------------")
     create_events_table(conn)
-    insert_events_data(conn,f"{db_file_path()}events.json")
-    print('-------------------------')
+    insert_events_data(conn, f"{db_file_path()}events.json")
+    print("-------------------------")
     create_rsvp_table(conn)
-    insert_rsvp_data(conn,f"{db_file_path()}rsvps.json")
-
+    insert_rsvp_data(conn, f"{db_file_path()}rsvps.json")

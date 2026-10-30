@@ -10,34 +10,43 @@ from src.auth.passwords import hash_password
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
 def get_user(conn: psycopg.Connection, email):
     with conn.cursor(row_factory=dict_row) as curs:
-        curs.execute("""SELECT * FROM users
+        curs.execute(
+            """SELECT * FROM users
                         WHERE email = %s
-                        """,(email,)
+                        """,
+            (email,),
         )
         user = curs.fetchone()
     if user == None:
-        raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
-                                                             "msg": f"INVALID REQUEST"})
+        raise HTTPException(
+            status_code=400,
+            detail={"status_code": "400 BAD REQUEST", "msg": f"INVALID REQUEST"},
+        )
     return user
+
 
 def get_user_by_id(id: int):
     conn = get_connection()
     with conn.cursor(row_factory=dict_row) as curs:
-        curs.execute("""SELECT * FROM users
+        curs.execute(
+            """SELECT * FROM users
                         WHERE id = %s
-                        """,(id,)
+                        """,
+            (id,),
         )
         user = curs.fetchone()
     if user == None:
-        raise HTTPException(status_code=400,detail={"status_code": "400 BAD REQUEST",
-                                                             "msg": f"INVALID REQUEST"})
+        raise HTTPException(
+            status_code=400,
+            detail={"status_code": "400 BAD REQUEST", "msg": f"INVALID REQUEST"},
+        )
     return user
-        
 
 
-#TODO: fix doc strings
+# TODO: fix doc strings
 def drop_user_table(conn: psycopg.Connection):
     """execute to drop the user table"""
     logger.info("DROPPING TABLE user")
@@ -61,7 +70,8 @@ def insert_user_data(conn: psycopg.Connection, filepath):
         with conn.cursor() as curs:
             for row in data:
                 curs.execute(
-                    insert_statement, (row["email"], hash_password(row["password"]), row["name"])
+                    insert_statement,
+                    (row["email"], hash_password(row["password"]), row["name"]),
                 )
         conn.commit()
     except (ConnectionError, psycopg.OperationalError, FileNotFoundError) as e:

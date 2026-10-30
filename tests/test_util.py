@@ -53,8 +53,8 @@ def test_insert_user_data_is_callable():
     assert callable(insert_user_data)
 
 
-#TEST drop_user_table
+# TEST drop_user_table
+
 
 def test_drop_user_table():
     assert callable(drop_user_table)
-

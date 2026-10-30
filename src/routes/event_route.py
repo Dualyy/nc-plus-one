@@ -1,87 +1,14 @@
-from typing import Optional
-
-from fastapi import APIRouter, Depends, FastAPI
-from pydantic import BaseModel
-from datetime import datetime, timezone
+from fastapi import APIRouter, Depends
 from src.table_utils.rsvps_table_util import find_rsvp_of_user_for_event
 from src.connection import get_connection
 from psycopg.rows import dict_row
-from fastapi import HTTPException
 from src.auth.security import get_current_user
 from src.table_utils.events_table_util import find_event_by_id
 from src.models.user import TokenUser
 from src.exceptions import *
+from src.models.events import *
 
 event_router = APIRouter(prefix="/events")
-
-
-class DetailedEvent(BaseModel):
-    id: int | None = None
-    title: str
-    description: str | None = None
-    starts_at: datetime
-    ends_at: datetime
-    location: str
-    address: str | None = None
-    capacity: int | None = None
-    created_at: datetime
-
-class BasicEvent(BaseModel):
-    id: int
-    title: str
-    starts_at: datetime
-    ends_at: datetime
-    location: str | None = None
-
-
-class EventsList(BaseModel):
-    events: list[BasicEvent]
-
-
-class EventDict(BaseModel):
-    event: DetailedEvent
-
-
-class EventID(BaseModel):
-    id: int
-
-
-class CreateRSVP(BaseModel):
-    attendee_id: int
-    event_id: int
-
-
-class RSVP(BaseModel):
-    id: int
-    attendee_id: int
-    event_id: int
-    created_at: datetime
-
-
-class CreateEvent(BaseModel):
-    title: str
-    description: str
-    starts_at: datetime
-    ends_at: datetime
-    venue_id: int
-
-
-class PatchEvent(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    starts_at: Optional[datetime] = None
-    ends_at: Optional[datetime] = None
-    venue_id: Optional[int] = None
-
-
-class Attendee(BaseModel):
-    id: int
-    name: str
-    email: str
-    rsvped_at: datetime
-
-class ListAttendees(BaseModel):
-    attendees: list[Attendee]
 
 
 @event_router.get("/")
@@ -101,22 +28,23 @@ def get_events() -> EventsList:
                             ORDER BY e.id""")
             events = crsr.fetchall()
             conn.commit()
-        return EventsList(events=[
+        return EventsList(
+            events=[
                 BasicEvent(
-                    id=int(event['id']),
-                    title=event['title'],
-                    description=event['description'],
-                    starts_at=event['starts_at'],
-                    ends_at=event['ends_at'],
-                    location=event['address']
+                    id=int(event["id"]),
+                    title=event["title"],
+                    description=event["description"],
+                    starts_at=event["starts_at"],
+                    ends_at=event["ends_at"],
+                    location=event["address"],
                 )
                 for event in events
-            ])
-        
+            ]
+        )
 
 
 @event_router.get("/{event_id}", response_model=EventDict)
-def get_event_by_id(event_id: int):
+def get_event_by_id(event_id: int) -> EventDict:
     """Retrieve an event by id
 
     The endpoint queries main database to give precise info about an event and its venue
@@ -144,7 +72,7 @@ def get_event_by_id(event_id: int):
         raise event_not_found(event_id)
     for e in event:
         return EventDict(
-            event= DetailedEvent(
+            event=DetailedEvent(
                 id=e["id"],
                 title=e["title"],
                 description=e["description"],
@@ -173,14 +101,12 @@ def create_RSVP(event_id: int, user: TokenUser = Depends(get_current_user)) -> R
     """
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
-
             event = find_event_by_id(crsr, event_id)
             if event is None:
                 raise event_not_found(event_id)
 
             rsvp = find_rsvp_of_user_for_event(crsr, event_id, user.id)
             if rsvp is None:
-
                 crsr.execute(
                     """
                             INSERT INTO rsvp(attendee_id,event_id)
@@ -198,7 +124,9 @@ def create_RSVP(event_id: int, user: TokenUser = Depends(get_current_user)) -> R
                     created_at=rsvp_event["created_at"],
                 )
             else:
-                raise conflict(f"rsvp for user: {user.id} already exists for event: {event_id} ")
+                raise conflict(
+                    f"rsvp for user: {user.id} already exists for event: {event_id} "
+                )
 
 
 @event_router.delete("/{event_id}/rsvp/me", status_code=204)
@@ -227,13 +155,18 @@ def delete_rsvp_for_event(event_id: int, user: TokenUser = Depends(get_current_u
                     )
                     conn.commit()
                 else:
-                    raise not_found("rsvp",f"No rsvp found for user: {user.id} at event: {event_id}")
+                    raise not_found(
+                        "rsvp",
+                        f"No rsvp found for user: {user.id} at event: {event_id}",
+                    )
             else:
                 raise event_not_found(event_id)
 
 
 @event_router.post("/", dependencies=[Depends(get_current_user)], status_code=201)
-def create_event(event: CreateEvent, user: TokenUser = Depends(get_current_user)):
+def create_event(
+    event: CreateEvent, user: TokenUser = Depends(get_current_user)
+) -> CreateEvent:
     """Create a new event
 
     The endpoint inserts a new event into the main database and returns the created row.
@@ -272,7 +205,7 @@ def patch_event(
     event_id: int,
     event_updates: PatchEvent,
     user: TokenUser = Depends(get_current_user),
-):
+) -> PatchEvent:
     """Update an event
 
     The endpoint updates a event in the main database and returns the updated row.
@@ -321,13 +254,15 @@ def patch_event(
 
 
 @event_router.get("/{event_id}/attendees", status_code=200)
-def get_event_attendees(event_id: int, user: TokenUser = Depends(get_current_user)) -> ListAttendees:
+def get_event_attendees(
+    event_id: int, user: TokenUser = Depends(get_current_user)
+) -> ListAttendees:
     """Queries the main database to give a list of attendees for an organisers event.
 
-        throws 403 if current user is not the event organiser
-        throws 400 if event not found
-    
-        PERMISSION: authenticated user -> event organiser
+    throws 403 if current user is not the event organiser
+    throws 400 if event not found
+
+    PERMISSION: authenticated user -> event organiser
     """
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
