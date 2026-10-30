@@ -10,9 +10,6 @@ from src.connection import get_connection
 auth_router = APIRouter(prefix="/auth")
 
 
-
-
-
 @auth_router.post("/login", status_code=200)
 def submit_auth(login: Login) -> Token:
     """attempt to login
