@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def get_user(conn: psycopg.Connection, email):
+def get_user(conn: psycopg.Connection, email: str):
+    """retrieves the user by email
+    takes a psycopg.Connection and user email as str"""
     with conn.cursor(row_factory=dict_row) as curs:
         curs.execute(
             """SELECT * FROM users
@@ -29,6 +31,9 @@ def get_user(conn: psycopg.Connection, email):
 
 
 def get_user_by_id(id: int):
+    """retrieves the user by a user_id
+    This function is used for retrieving a login user it deliberately throws a 400
+    to obscure whether or not an account with this email already exists."""
     conn = get_connection()
     with conn.cursor(row_factory=dict_row) as curs:
         curs.execute(
@@ -39,6 +44,7 @@ def get_user_by_id(id: int):
         )
         user = curs.fetchone()
     if user == None:
+        
         raise HTTPException(
             status_code=400,
             detail={"status_code": "400 BAD REQUEST", "msg": f"INVALID REQUEST"},
@@ -46,7 +52,6 @@ def get_user_by_id(id: int):
     return user
 
 
-# TODO: fix doc strings
 def drop_user_table(conn: psycopg.Connection):
     """execute to drop the user table"""
     logger.info("DROPPING TABLE user")

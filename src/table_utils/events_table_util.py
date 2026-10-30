@@ -19,9 +19,8 @@ def find_event_by_id(crsr: psycopg.Cursor, event_id: int):
     return event
 
 
-# TODO: fix doc strings
 def create_events_table(conn: psycopg.Connection):
-    """create events table"""
+    """create events table with id, title, description, starts_at, ends_at, organiser_id, venue_id, created_at"""
     logger.info("CREATE TABLE events")
     with conn.cursor() as curs:
         curs.execute("""CREATE TABLE events(
@@ -39,7 +38,7 @@ def create_events_table(conn: psycopg.Connection):
 
 
 def drop_events_table(conn: psycopg.Connection):
-    """drop events table"""
+    """drop events table if it exists"""
     logger.info("DROPPING TABLE events")
     with conn.cursor() as curs:
         curs.execute("""DROP TABLE IF EXISTS events""")

@@ -8,6 +8,9 @@ logging.basicConfig(level=logging.INFO)
 
 
 def find_rsvp_of_user_for_event(crsr: psycopg.Cursor, event_id: int, user_id: int):
+    """finds the users rsvp for by event and user id
+    takes a psycopg.Cursor, event_id and user_is as arguments.
+    """
     crsr.execute(
         """
                         SELECT * FROM rsvp r
@@ -18,9 +21,10 @@ def find_rsvp_of_user_for_event(crsr: psycopg.Cursor, event_id: int, user_id: in
     return rsvp_event
 
 
-# TODO: fix doc strings
+
 def create_rsvp_table(conn: psycopg.Connection):
-    """create rsvp table"""
+    """create rsvp table with id as primary key, attendee_id as int, event_id as foreign key, and a created_at with value of creation.
+    takes a psycopg.Connection"""
     logger.info("CREATE TABLE rsvp")
     with conn.cursor() as curs:
         curs.execute("""CREATE TABLE rsvp(
@@ -34,7 +38,7 @@ def create_rsvp_table(conn: psycopg.Connection):
 
 
 def drop_rsvp_table(conn: psycopg.Connection):
-    """drop rsvp table"""
+    """drop rsvp table if it exists."""
     logger.info("DROPPING TABLE rsvp")
     with conn.cursor() as curs:
         curs.execute("""DROP TABLE IF EXISTS rsvp""")
