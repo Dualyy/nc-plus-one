@@ -1,4 +1,6 @@
 # nc-plus-one
+This API allows users to register, browse events, RSVP, and manage their attendance. Organisers are be able to create and manage events, and view statistics about their audience.
+
 ### Requirements
 Python
 
@@ -30,11 +32,14 @@ This project requires you to setup different credentials for different environme
 An example file is provided within the repo but generally it should look something like this:
 
 ```python
-host = '[YOUR HOST ADDRESS]'
-port = '[PORT]'
-dbname = '[DBNAME]'
-user = '[USER]'
-password = '[PASSWORD]'
+HOST = '[YOUR HOST ADDRESS]'
+PORT = '[PORT]'
+DBNAME = '[DBNAME]'
+USER = '[USER]'
+PASSWORD = '[PASSWORD]'
+
+
+JWT_SECRET = '[YOUR SECRET]'
 
 ```
 
@@ -44,4 +49,4 @@ from within the project directory and the database will be seeded.
 
 ## Running the backend
 
-To run the required backend server please run ```uvicorn main:app --reload```. After running the server, the API documentation can be found at ```http://[HOSTNAME][?Port]/docs#/```
+To run the required backend server please run ```ENV=[ENVIRONMENT_YOU_WANT_TO_RUN] uvicorn main:app --reload```. After running the server, the API documentation can be found at ```http://[HOSTNAME][?Port]/docs#/```
