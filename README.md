@@ -52,6 +52,8 @@ To seed the database simply run `python src/seed.py`. This is not necessary when
 
 To run the required backend server please run ```ENV=[ENVIRONMENT_YOU_WANT_TO_RUN] uvicorn main:app --reload```. After running the server, the API documentation can be found at ```http://[HOSTNAME][?Port]/docs#/```
 
+## Testing
+When running the pytests, please make sure to run them using the ENV variable by using `ENV=test pytest` to ensure it is using the correct database and credentials.
 
 ## General Info
 
