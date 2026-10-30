@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from psycopg.rows import dict_row
+from exceptions import nc_one_exception, bad_request
 from src.table_utils.user_table_util import get_user
 from src.auth.security import create_JWT_token
 from src.auth.passwords import verify_password, hash_password
@@ -23,42 +24,22 @@ def submit_auth(login: Login) -> Token:
     if login.password and login.email:
         user = get_user(conn, login.email)
         if user is None:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "status_code": "401 UNAUTHORIZED",
-                    "msg": "email or password wrong",
-                },
-            )
+            raise nc_one_exception(401, "email or password wrong")
+
         if verify_password(user["password_hash"], login.password):
             token = create_JWT_token(user["id"], user["name"])
             return Token(token=token, type="bearer")
         else:
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "status_code": "401 UNAUTHORIZED",
-                    "msg": "email or password wrong",
-                },
-            )
+            raise nc_one_exception(401, "email or password wrong")
 
     else:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "status_code": "400 BAD REQUEST",
-                "msg": "Missing email or password field",
-            },
-        )
+        raise bad_request("Missing email or password field")
 
 
 @auth_router.post("/register", status_code=201, response_model=User)
 def register_user(login_info: CreateLogin):
     if not login_info:
-        raise HTTPException(
-            status_code=400,
-            detail={"status_code": "400 BAD REQUEST", "msg": f"Field required"},
-        )
+        raise bad_request("field required")
     pass
     conn = get_connection()
     with conn.cursor(row_factory=dict_row) as crsr:
@@ -70,13 +51,7 @@ def register_user(login_info: CreateLogin):
         )
         login = crsr.fetchone()
         if login != None:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "status_code": "400 BAD REQUEST",
-                    "msg": f"A user with email {login_info.email} already exists",
-                },
-            )
+            raise bad_request("Invalid email or password")
 
         crsr.execute(
             """INSERT INTO users(name,email,password_hash)
