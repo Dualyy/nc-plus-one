@@ -10,7 +10,7 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from src.security import *
+from src.auth.security import *
 
 app = FastAPI(title="nc_plus_one")
 app.include_router(event_router)

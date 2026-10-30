@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from src.connection import config
-from src.user_table_util import get_user_by_id
+from src.table_utils.user_table_util import get_user_by_id
 from src.models.user import TokenUser
 
 

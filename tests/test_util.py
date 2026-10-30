@@ -1,6 +1,6 @@
 from src.util import *
-from src.user_table_util import *
-from src.venues_table_util import *
+from src.table_utils.user_table_util import *
+from src.table_utils.venues_table_util import *
 import types
 import pytest
 

@@ -1,8 +1,8 @@
-from src.user_table_util import *
-from src.venues_table_util import *
+from src.table_utils.user_table_util import *
+from src.table_utils.venues_table_util import *
 from src.connection import get_connection, get_environment
-from src.events_table_util import *
-from src.rsvps_table_util import *
+from src.table_utils.events_table_util import *
+from src.table_utils.rsvps_table_util import *
 import os
 
 def db_file_path():

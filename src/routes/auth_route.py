@@ -2,9 +2,9 @@ from fastapi import APIRouter, FastAPI,HTTPException
 from pydantic import BaseModel
 from psycopg.rows import dict_row 
 from datetime import datetime
-from src.user_table_util import get_user
-from src.security import create_JWT_token
-from src.passwords import verify_password, hash_password
+from src.table_utils.user_table_util import get_user
+from src.auth.security import create_JWT_token
+from src.auth.passwords import verify_password, hash_password
 
 from src.connection import get_connection
 

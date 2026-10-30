@@ -3,12 +3,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, FastAPI
 from pydantic import BaseModel
 from datetime import datetime, timezone
-from src.rsvps_table_util import find_rsvp_of_user_for_event
+from src.table_utils.rsvps_table_util import find_rsvp_of_user_for_event
 from src.connection import get_connection
 from psycopg.rows import dict_row
 from fastapi import HTTPException
-from src.security import get_current_user
-from src.events_table_util import find_event_by_id
+from src.auth.security import get_current_user
+from src.table_utils.events_table_util import find_event_by_id
 from src.models.user import TokenUser
 
 event_router = APIRouter(prefix="/events")

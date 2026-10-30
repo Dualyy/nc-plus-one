@@ -4,7 +4,7 @@ from main import app
 from src.routes.auth_route import Token
 from src.seed import seed
 from src.connection import get_connection
-from src.security import *
+from src.auth.security import *
 
 @pytest.fixture
 def client():

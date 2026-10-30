@@ -5,7 +5,7 @@ from psycopg.rows import dict_row
 from src.connection import get_connection
 import logging
 from src.util import load_json_file
-from src.passwords import hash_password
+from src.auth.passwords import hash_password
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
