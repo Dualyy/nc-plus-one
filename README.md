@@ -46,7 +46,7 @@ JWT_SECRET = "[YOUR SECRET]"
 
 ## Seeding
 
-To seed the database simply run `python src/seed.py`. This is not necessary when running tests with pytest, as pytest calls the function itself
+To seed the database simply run `python -m src.seed`. This is not necessary when running tests with pytest, as pytest calls the function itself
 
 ## Running the backend
 
