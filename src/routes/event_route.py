@@ -273,7 +273,7 @@ def patch_event(
     event_updates: PatchEvent,
     user: TokenUser = Depends(get_current_user),
 ):
-    """Update a event
+    """Update an event
 
     The endpoint updates a event in the main database and returns the updated row.
     Only the organiser can edit it.
@@ -296,7 +296,7 @@ def patch_event(
             event = find_event_by_id(crsr, event_id)
             if event is None:
                 raise event_not_found(event_id)
-            if event["organiser_id"] is not user.id:
+            if event["organiser_id"] != user.id:
                 raise forbidden()
             else:
                 if updates.get("starts_at", event["starts_at"]) >= updates.get(
