@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from psycopg.rows import dict_row
-from exceptions import nc_one_exception, bad_request
+from src.exceptions import nc_one_exception, bad_request
 from src.table_utils.user_table_util import get_user
 from src.auth.security import create_JWT_token
 from src.auth.passwords import verify_password, hash_password
