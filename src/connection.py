@@ -4,14 +4,23 @@ import os
 
 
 def get_environment() -> str:
-    return os.getenv("ENV", "test")  # one source of truth
+    """
+    Get the environment variable and set it to development by default if none was given
+
+    """
+    return os.getenv("ENV", "development")
 
 
 config = dotenv_values(f".env.{get_environment()}")
 
 
 def get_connection():
+    """
+    use this to establish the database connection with the environment data from the
+    environment set/ retrieved by get_environment
 
+    returns psycopg.Connection
+    """
     conn_string = psycopg.conninfo.make_conninfo(
         host=config.get("HOST"),
         dbname=config.get("DBNAME"),
