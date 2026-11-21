@@ -10,8 +10,10 @@ def db_file_path():
     env = get_environment()
     if env == "test":
         return "./db/data_test/"
-    if env == "development":
-        return "./db/data/"
+    if env == "development" or env == "dev":
+        return "./db/data_development/"
+    if env == "production" or env == "prod":
+        return "./db/data_production"
     raise ValueError(f"No seed data configured for ENV={env!r}")
 
 

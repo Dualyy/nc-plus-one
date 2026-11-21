@@ -8,7 +8,7 @@ import pytest
 # fixtures
 @pytest.fixture  # JSON file reader
 def json_user_file():
-    return load_json_file("./db/data/users.json")
+    return load_json_file("./db/data_development/users.json")
 
 
 # TEST load_json
