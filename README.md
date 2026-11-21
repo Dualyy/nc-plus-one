@@ -67,7 +67,7 @@ When running the pytests, please make sure to run them using the ENV variable by
 |POST / DELETE	|/events/{id}/rsvp, /events/{id}/rsvp/me	|user
 |GET|	/events/{id}/attendees	|organiser
 |GET|	/user/me/events	|user
-|GET|	/organisers/{id}/stats	|public -> CURRENTLY WORK IN PROGRESS
+|GET|	/organisers/{id}/stats	|public
 
 
 ### Tree structure
