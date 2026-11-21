@@ -18,21 +18,43 @@ def get_organiser_stats_by_id(organiser_id: int):
     """
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
-            crsr.execute("""
-                            SELECT u.id, u.name, Count(e.id) as total_events, AVG(r.attendee_id) as avg_attendance,
-                            MAX(r.attendee_id) as best_attendend_count
-                            FROM users u
-                            LEFT JOIN events e
-                            ON u.id = e.organiser_id
-                            LEFT JOIN rsvp r
-                            ON e.id = r.event_id
-                            GROUP BY u.id""")
-            organiser = crsr.fetchone()
-            if organiser is None:
-                raise HTTPException(
-                    status_code=404,
-                    detail={
-                        "status_code": "404 NOT FOUND",
-                        "msg": f"organiser with id: {organiser_id} does not exist",
-                    },
+            crsr.execute(
+                """
+                WITH event_counts AS (
+                    SELECT e.id, e.organiser_id, COUNT(r.id) AS rsvp_count
+                    FROM events e
+                    LEFT JOIN rsvp r ON r.event_id = e.id
+                    GROUP BY e.id, e.organiser_id
+                ),
+                organiser_stats AS (
+                    SELECT
+                        u.id   AS organiser_id,
+                        u.name AS name,
+                        COUNT(ec.id)                      AS total_events,
+                        ROUND(AVG(ec.rsvp_count), 1)      AS avg_attendance,
+                        MAX(ec.rsvp_count)                AS best_attended_count
+                    FROM users u
+                    JOIN event_counts ec ON ec.organiser_id = u.id
+                    GROUP BY u.id, u.name
+                ),
+                ranked AS (
+                    SELECT *, RANK() OVER (ORDER BY total_events DESC) AS organiser_rank
+                    FROM organiser_stats
                 )
+                SELECT * FROM ranked WHERE organiser_id = %s;
+                """,
+                (organiser_id,),
+            )
+            organiser = crsr.fetchone()
+
+    if organiser is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "status_code": "404 NOT FOUND",
+                "msg": f"organiser with id: {organiser_id} does not exist",
+            },
+        )
+
+    organiser["avg_attendance"] = float(organiser["avg_attendance"])
+    return {"stats": organiser}

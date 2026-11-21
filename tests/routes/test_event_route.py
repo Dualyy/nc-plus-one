@@ -2,6 +2,15 @@ import pytest
 from conftest_routes import *
 
 
+VALID_EVENT = {
+    "title": "Summer Rooftop Social",
+    "description": "An evening of networking and good vibes.",
+    "starts_at": "2025-08-15T18:00:00Z",
+    "ends_at": "2025-08-15T21:00:00Z",
+    "venue_id": 2,
+}
+
+
 # /events
 def test_get_events_returns_status_200(client):
     response = client.get("/events")
@@ -77,6 +86,12 @@ def test_get_event_RSVP_creation_return_status_404_when_event_not_found(client, 
     assert response.json()["error"]["msg"] == "event id: 99 does not exist"
 
 
+    # ---- RSVP: duplicate
+def test_get_event_RSVP_creation_return_status_409_when_already_rsvped(client, login):
+    response = client.post("/events/1/rsvp", headers=login)  # user 1 already attends event 1
+    assert response.status_code == 409
+
+
 # ----------------------------------------------------
 # DELETE /events/:id/rvsp/me
 
@@ -123,6 +138,70 @@ def test_post_event_creation_return_status_401_when_unauthenticated(client):
     response = client.post("/events")
     assert response.status_code == 401
     assert response.json()["error"] == "Not authenticated"
+
+
+# ---- POST /events
+def test_post_event_creation_return_status_400_when_missing_fields(client, login):
+    response = client.post("/events", json={}, headers=login)
+    assert response.status_code == 400
+    assert response.json()["error"]["msg"] == "Field required"
+
+
+def test_post_event_creation_return_status_400_when_invalid_date(client, login):
+    response = client.post(
+        "/events", json={**VALID_EVENT, "starts_at": "not-a-date"}, headers=login
+    )
+    assert response.status_code == 400
+    assert "datetime" in response.json()["error"]["msg"]
+
+
+def test_post_event_creation_return_status_400_when_ends_before_starts(client, login):
+    response = client.post(
+        "/events",
+        json={
+            **VALID_EVENT,
+            "starts_at": "2025-08-15T21:00:00Z",
+            "ends_at": "2025-08-15T18:00:00Z",
+        },
+        headers=login,
+    )
+    assert response.status_code == 400
+
+
+def test_post_event_creation_return_status_400_when_venue_does_not_exist(client, login):
+    response = client.post("/events", json={**VALID_EVENT, "venue_id": 999}, headers=login)
+    assert response.status_code == 400 
+
+
+# ---- PATCH /events/:id
+def test_patch_event_return_status_400_when_empty_body(client, login):
+    response = client.patch("/events/1", json={}, headers=login)
+    assert response.status_code == 400
+
+
+def test_patch_event_return_status_400_when_invalid_date(client, login):
+    response = client.patch("/events/1", json={"starts_at": "not-a-date"}, headers=login)
+    assert response.status_code == 400
+
+
+def test_patch_event_return_status_400_when_ends_before_starts(client, login):
+    response = client.patch(
+        "/events/1",
+        json={"starts_at": "2025-08-15T21:00:00Z", "ends_at": "2025-08-15T18:00:00Z"},
+        headers=login,
+    )
+    assert response.status_code == 400
+
+
+def test_patch_event_return_status_404_when_event_not_found(client, login):
+    response = client.patch("/events/99", json={"title": "x"}, headers=login)
+    assert response.status_code == 404
+
+
+def test_get_events_returns_events_in_order(client):
+    response = client.get("/events")
+    events = response.json()["events"]
+    assert [event["id"] for event in events] == [1, 2, 3, 4]
 
 
 # =========================================================

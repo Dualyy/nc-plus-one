@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from psycopg.errors import ForeignKeyViolation
 from src.table_utils.rsvps_table_util import find_rsvp_of_user_for_event
 from src.connection import get_connection
 from psycopg.rows import dict_row
@@ -22,10 +23,11 @@ def get_events() -> EventsList:
     """
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
-            crsr.execute("""SELECT * FROM events e
-                            INNER JOIN venues v
-                            ON e.venue_id = v.id
-                            ORDER BY e.id""")
+            crsr.execute("""SELECT e.id, e.title, e.description, e.starts_at, e.ends_at,
+                       v.address
+                FROM events e
+                INNER JOIN venues v ON e.venue_id = v.id
+                ORDER BY e.starts_at, e.id""")
             events = crsr.fetchall()
             conn.commit()
         return EventsList(
@@ -179,25 +181,33 @@ def create_event(
     PERMISSIONS: authenticated user
 
     """
+
+    if event.ends_at <= event.starts_at:
+        raise bad_request("ends_at must be after starts_at")
+
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
-            crsr.execute(
-                """
-                        INSERT INTO events (title, description, starts_at, ends_at, venue_id, organiser_id)
-                        VALUES (%s,%s,%s,%s,%s,%s)
-                        RETURNING *""",
-                (
-                    event.title,
-                    event.description,
-                    event.starts_at,
-                    event.ends_at,
-                    event.venue_id,
-                    user.id,
-                ),
-            )
+            try:
+                crsr.execute(
+                    """
+                            INSERT INTO events (title, description, starts_at, ends_at, venue_id, organiser_id)
+                            VALUES (%s,%s,%s,%s,%s,%s)
+                            RETURNING *""",
+                    (
+                        event.title,
+                        event.description,
+                        event.starts_at,
+                        event.ends_at,
+                        event.venue_id,
+                        user.id,
+                    ),
+                )
+            except ForeignKeyViolation:
+                raise bad_request("venue id does not exist")
             conn.commit()
             created_event = crsr.fetchone()
-    return created_event
+
+            return created_event
 
 
 @event_router.patch("/{event_id}", status_code=200)
@@ -218,11 +228,15 @@ def patch_event(
     PERMISSIONS: authenticated user (only organiser can update an event)
 
     """
+    #safe guarding against SQL injection by only allowing known fields in the Database.
     ALLOWED_COLUMNS = {"title", "description", "starts_at", "ends_at", "venue_id"}
     updates = {}
     for key, value in event_updates:
         if key in ALLOWED_COLUMNS and value is not None:
             updates[key] = value
+
+    if all(fields is None for fields in updates.values()):
+        raise bad_request("Please provide at least one field to change")
 
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:

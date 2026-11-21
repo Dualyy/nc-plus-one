@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from psycopg.rows import dict_row
-from src.exceptions import nc_one_exception, bad_request
+from src.exceptions import conflict, nc_one_exception, bad_request
 from src.table_utils.user_table_util import get_user
 from src.auth.security import create_JWT_token
 from src.auth.passwords import verify_password, hash_password
@@ -20,48 +20,49 @@ def submit_auth(login: Login) -> Token:
     and 400 if misformed
     """
 
-    conn = get_connection()
-    if login.password and login.email:
-        user = get_user(conn, login.email)
-        if user is None:
-            raise nc_one_exception(401, "email or password wrong")
+    with get_connection() as conn:
+        if login.password and login.email:
+            user = get_user(conn, login.email)
+            if user is None:
+                raise nc_one_exception(401, "email or password wrong")
 
-        if verify_password(user["password_hash"], login.password):
-            token = create_JWT_token(user["id"], user["name"])
-            return Token(token=token, type="bearer")
+            if verify_password(user["password_hash"], login.password):
+                token = create_JWT_token(user["id"], user["name"])
+                return Token(token=token, type="bearer")
+            else:
+                raise nc_one_exception(401, "email or password wrong")
+
         else:
-            raise nc_one_exception(401, "email or password wrong")
-
-    else:
-        raise bad_request("Missing email or password field")
+            raise bad_request("Missing email or password field")
 
 
 @auth_router.post("/register", status_code=201, response_model=User)
 def register_user(login_info: CreateLogin):
     if not login_info:
         raise bad_request("field required")
-    pass
-    conn = get_connection()
-    with conn.cursor(row_factory=dict_row) as crsr:
-        crsr.execute(
-            """SELECT * FROM users
-                        WHERE email = %s;
-                         """,
-            (login_info.email,),
-        )
-        login = crsr.fetchone()
-        if login != None:
-            raise bad_request("Invalid email or password")
+    
+    with get_connection() as conn:
 
-        crsr.execute(
-            """INSERT INTO users(name,email,password_hash)
-                        VALUES (%s,%s,%s)
-                        RETURNING *;
-                    """,
-            (login_info.name, login_info.email, hash_password(login_info.password)),
-        )
-        conn.commit()
-        user = crsr.fetchone()
-        created_at = user["created_at"]
-        user.pop("created_at")
-        return User(**user, created_at=created_at)
+        with conn.cursor(row_factory=dict_row) as crsr:
+            crsr.execute(
+                """SELECT * FROM users
+                            WHERE email = %s;
+                            """,
+                (login_info.email,),
+            )
+            login = crsr.fetchone()
+            if login != None:
+                raise conflict(f"User with email {login_info.email} already exists")
+
+            crsr.execute(
+                """INSERT INTO users(name,email,password_hash)
+                            VALUES (%s,%s,%s)
+                            RETURNING *;
+                        """,
+                (login_info.name, login_info.email, hash_password(login_info.password)),
+            )
+            conn.commit()
+            user = crsr.fetchone()
+            created_at = user["created_at"]
+            user.pop("created_at")
+            return User(**user, created_at=created_at)

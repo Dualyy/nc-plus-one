@@ -8,7 +8,7 @@ def get_environment() -> str:
     Get the environment variable and set it to development by default if none was given
 
     """
-    return os.getenv("ENV", "development")
+    return os.getenv("ENV","development")
 
 
 config = dotenv_values(f".env.{get_environment()}")

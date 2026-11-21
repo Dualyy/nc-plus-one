@@ -21,18 +21,18 @@ def find_rsvp_of_user_for_event(crsr: psycopg.Cursor, event_id: int, user_id: in
     return rsvp_event
 
 
-
 def create_rsvp_table(conn: psycopg.Connection):
     """create rsvp table with id as primary key, attendee_id as int, event_id as foreign key, and a created_at with value of creation.
     takes a psycopg.Connection"""
     logger.info("CREATE TABLE rsvp")
     with conn.cursor() as curs:
         curs.execute("""CREATE TABLE rsvp(
-                        id SERIAL PRIMARY KEY,
-                        attendee_id INT REFERENCES users(id),
-                        event_id INT REFERENCES events(id),
-                        created_at TIMESTAMPTZ DEFAULT now()
-                    );""")
+    id SERIAL PRIMARY KEY,
+    attendee_id INT NOT NULL REFERENCES users(id),
+    event_id INT NOT NULL REFERENCES events(id),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (attendee_id, event_id)
+);""")
         conn.commit()
     logger.info("RSVP table created")
 
