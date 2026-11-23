@@ -10,12 +10,20 @@ from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from src.auth.security import *
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="nc_plus_one")
 app.include_router(event_router)
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(organisers_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(HTTPException)

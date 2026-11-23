@@ -1,0 +1,42 @@
+[
+  {
+    "name": "The Foundry Rooms",
+    "address": "22 Mill Lane, Leeds, LS2 7JP",
+    "capacity": 120
+  },
+  {
+    "name": "Harbourside Hall",
+    "address": "5 Quay Street, Bristol, BS1 4DJ",
+    "capacity": 250
+  },
+  {
+    "name": "Online (Video Call)",
+    "address": null,
+    "capacity": 500
+  },
+  {
+    "name": "The Glasshouse",
+    "address": "88 Canal Road, Manchester, M15 4FN",
+    "capacity": 80
+  },
+  {
+    "name": "Northgate Community Centre",
+    "address": "3 Northgate, Edinburgh, EH1 1LU",
+    "capacity": 150
+  },
+  {
+    "name": "Kiln & Co Workspace",
+    "address": "41 Kiln Street, Birmingham, B1 2QT",
+    "capacity": 60
+  },
+  {
+    "name": "The Assembly Rooms",
+    "address": "17 Castle Walk, Cardiff, CF10 3AA",
+    "capacity": 300
+  },
+  {
+    "name": "Riverside Studio",
+    "address": "9 Wharf Road, London, E14 9SH",
+    "capacity": 40
+  }
+]

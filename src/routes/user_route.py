@@ -32,7 +32,6 @@ def get_event_attendees(user: TokenUser = Depends(get_current_user)):
                 (user.id,),
             )
             rsvps = crsr.fetchall()
-            rank = 0
 
             return {
                 "events": [
@@ -47,3 +46,7 @@ def get_event_attendees(user: TokenUser = Depends(get_current_user)):
                     for rank, rsvp in enumerate(rsvps, start=1)
                 ]
             }
+
+@user_router.get("/me", status_code=200)
+def get_event_attendees(user: TokenUser = Depends(get_current_user)):
+    return user
