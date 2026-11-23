@@ -48,5 +48,5 @@ def get_event_attendees(user: TokenUser = Depends(get_current_user)):
             }
 
 @user_router.get("/me", status_code=200)
-def get_event_attendees(user: TokenUser = Depends(get_current_user)):
+def get_me(user: TokenUser = Depends(get_current_user)):
     return user
