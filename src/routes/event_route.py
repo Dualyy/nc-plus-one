@@ -81,6 +81,7 @@ def get_event_by_id(event_id: int) -> EventDict:
                 starts_at=e["starts_at"],
                 ends_at=e["ends_at"],
                 location=e["venue_name"],
+                organiser=e["organiser_id"],
                 address=e["venue_address"],
                 capacity=e["capacity"],
                 created_at=e["created_at"],

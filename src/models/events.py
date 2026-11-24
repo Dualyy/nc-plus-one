@@ -27,6 +27,7 @@ class DetailedEvent(BaseModel):
     starts_at: datetime
     ends_at: datetime
     location: str
+    organiser: int
     address: str | None = None
     capacity: int | None = None
     created_at: datetime
