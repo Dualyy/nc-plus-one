@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from src.routes.venues_route import venue_router
 from src.routes.event_route import event_router
 from src.routes.auth_route import auth_router
 from src.routes.user_route import user_router
@@ -18,6 +19,7 @@ app.include_router(event_router)
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(organisers_router)
+app.include_router(venue_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
