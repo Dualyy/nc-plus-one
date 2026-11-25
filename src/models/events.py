@@ -65,3 +65,25 @@ class Attendee(BaseModel):
 
 class ListAttendees(BaseModel):
     attendees: list[Attendee]
+
+from datetime import datetime
+from typing_extensions import TypedDict
+
+
+class VenueInfo(TypedDict):
+    id: int
+    name: str
+    address: str
+    capacity: int
+
+
+class EventWithVenue(TypedDict):
+    id: int
+    title: str
+    description: str | None
+    starts_at: datetime
+    ends_at: datetime
+    venue_id: int
+    organiser_id: int
+    created_at: datetime
+    venue: VenueInfo

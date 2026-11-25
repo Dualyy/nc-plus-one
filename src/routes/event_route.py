@@ -298,3 +298,47 @@ def get_event_attendees(
             list_attendees = crsr.fetchall()
 
     return ListAttendees(attendees=[attendee for attendee in list_attendees])
+
+
+@event_router.get("/{event_id}/details", response_model=EventWithVenue)
+def get_event_details(event_id: int) -> EventWithVenue:
+    """Retrieve an event and its venue by event id
+
+    The endpoint queries main database to give precise info about an event and its venue
+
+    throws 404 NOT FOUND when event_id does not exist
+
+    PERMISSIONS: public
+    """
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as crsr:
+            crsr.execute(
+                """SELECT e.*, v.name as venue_name, v.address as venue_address, v.capacity as venue_capacity
+                            FROM events e
+                            INNER JOIN venues v
+                            ON e.venue_id = v.id
+                            WHERE e.id = %s
+                            """,
+                (event_id,),
+            )
+            e = crsr.fetchone()
+
+    if e is None:
+        raise event_not_found(event_id)
+
+    return EventWithVenue(
+        id=e["id"],
+        title=e["title"],
+        description=e["description"],
+        starts_at=e["starts_at"],
+        ends_at=e["ends_at"],
+        venue_id=e["venue_id"],
+        organiser_id=e["organiser_id"],
+        created_at=e["created_at"],
+        venue=VenueInfo(
+            id=e["venue_id"],
+            name=e["venue_name"],
+            address=e["venue_address"],
+            capacity=e["venue_capacity"],
+        ),
+    )
