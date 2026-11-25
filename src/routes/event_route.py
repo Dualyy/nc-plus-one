@@ -328,7 +328,7 @@ def get_event_details(event_id: int) -> EventWithVenue:
 
     venue = None
     if e["venue_name"] is not None:
-        venue = VenueInfo(
+        venue = Venue(
             id=e["venue_id"],
             name=e["venue_name"],
             address=e["venue_address"],

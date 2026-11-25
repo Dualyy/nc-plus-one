@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from src.models.venues import Venue
+
 
 class CreateEvent(BaseModel):
     title: str
@@ -66,18 +68,9 @@ class Attendee(BaseModel):
 class ListAttendees(BaseModel):
     attendees: list[Attendee]
 
-from datetime import datetime
-from typing_extensions import TypedDict
 
 
-class VenueInfo(TypedDict):
-    id: int
-    name: str
-    address: str
-    capacity: int
-
-
-class EventWithVenue(TypedDict):
+class EventWithVenue(BaseModel):
     id: int
     title: str
     description: str | None
@@ -86,4 +79,4 @@ class EventWithVenue(TypedDict):
     venue_id: int | None
     organiser_id: int
     created_at: datetime
-    venue: VenueInfo | None
+    venue: Venue | None
