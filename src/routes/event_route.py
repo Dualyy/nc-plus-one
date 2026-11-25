@@ -315,7 +315,7 @@ def get_event_details(event_id: int) -> EventWithVenue:
             crsr.execute(
                 """SELECT e.*, v.name as venue_name, v.address as venue_address, v.capacity as venue_capacity
                             FROM events e
-                            INNER JOIN venues v
+                            LEFT JOIN venues v
                             ON e.venue_id = v.id
                             WHERE e.id = %s
                             """,
@@ -326,6 +326,17 @@ def get_event_details(event_id: int) -> EventWithVenue:
     if e is None:
         raise event_not_found(event_id)
 
+    venue = None
+    if e["venue_name"] is not None:
+        venue = VenueInfo(
+            id=e["venue_id"],
+            name=e["venue_name"],
+            address=e["venue_address"],
+            capacity=e["venue_capacity"],
+        )
+
+    
+
     return EventWithVenue(
         id=e["id"],
         title=e["title"],
@@ -335,10 +346,5 @@ def get_event_details(event_id: int) -> EventWithVenue:
         venue_id=e["venue_id"],
         organiser_id=e["organiser_id"],
         created_at=e["created_at"],
-        venue=VenueInfo(
-            id=e["venue_id"],
-            name=e["venue_name"],
-            address=e["venue_address"],
-            capacity=e["venue_capacity"],
-        ),
+        venue=venue
     )

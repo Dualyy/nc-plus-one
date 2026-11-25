@@ -83,7 +83,7 @@ class EventWithVenue(TypedDict):
     description: str | None
     starts_at: datetime
     ends_at: datetime
-    venue_id: int
+    venue_id: int | None
     organiser_id: int
     created_at: datetime
-    venue: VenueInfo
+    venue: VenueInfo | None
