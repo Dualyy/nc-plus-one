@@ -8,7 +8,7 @@ venue_router = APIRouter(prefix="/venues")
 
 
 @venue_router.get("", status_code=200)
-def get_me():
+def get_venues():
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as crsr:
             crsr.execute(
@@ -28,5 +28,25 @@ def get_me():
                        "capacity": venue["capacity"]
                     }
                     for venue in venues
+                ]
+            }
+
+
+@venue_router.get("/{venue_id}", status_code=200)
+def get_venue_by_id(venue_id: int):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as crsr:
+            crsr.execute(
+                            """
+                            SELECT * FROM venues
+                            WHERE id = %s
+                            """,
+                (venue_id,),
+            )
+            venue = crsr.fetchone()
+
+            return {
+                "venue": [
+                    {**venue}
                 ]
             }
