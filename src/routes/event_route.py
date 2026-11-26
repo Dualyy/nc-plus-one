@@ -169,7 +169,7 @@ def delete_rsvp_for_event(event_id: int, user: TokenUser = Depends(get_current_u
 @event_router.post("/", dependencies=[Depends(get_current_user)], status_code=201)
 def create_event(
     event: CreateEvent, user: TokenUser = Depends(get_current_user)
-) -> CreateEvent:
+) -> BasicEvent:
     """Create a new event
 
     The endpoint inserts a new event into the main database and returns the created row.

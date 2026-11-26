@@ -32,6 +32,7 @@ class DetailedEvent(BaseModel):
     organiser: int
     address: str | None = None
     capacity: int | None = None
+    venue_id: int 
     created_at: datetime
 
 
